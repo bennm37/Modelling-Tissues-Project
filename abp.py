@@ -110,7 +110,9 @@ class ABP(object):
             direction_data[i,:,:] = self.directions()
             velocity_data[i,:,:] = self.rdot
         return r_data,direction_data,velocity_data
-
+    def save_movement_data(self,T,dt,loc,file_name):
+        r_data,direction_data,velocity_data = self.generate_movement_data(T,dt)
+        pd.write_csv()
 
 ##DISPLAYERS
     def display_state(self):
