@@ -199,7 +199,9 @@ class ABP(object):
         anim = animation.FuncAnimation(fig,update_anim,frames=T//10)
         return anim
         
-
+def slider_animation(self):
+    """Has sliders for parameters and generates animations in real time. """
+    pass 
 class Analysis(object):
     def __init__(self,data_name,parameters):
         # self.data = open("data_name","r")
