@@ -13,14 +13,13 @@ def short_scale_repulsion(pvec,R=0.1,k=1):
     f_ij = np.where(dist<R,-k*(np.full(dist.shape,2*R)-dist),np.zeros(dist.shape))
     return f_ij
 
-def repulsion_cohesion_potential(pvec,R=1,R_2=None,k=1):
-    """Linear repulsion less than R, linear cohesion between R and R_2"""
-    if not R_2:
-        R_2 = 1.2*R
+def repulsion_cohesion_potential(pvec,R=1,k=1,epsilon=0.2):
+
+    """Uses potential from the glassy behaviour paper[1], setting b_i =1 """
     dist = lag.norm(pvec,axis=2)
-    f_ij = np.where(dist<R,-k*(np.full(dist.shape,2*R)-dist),np.zeros(dist.shape))
+    f_ij = np.where(dist<R+R*epsilon,k*(R*dist-np.full(dist.shape,R**2)),np.zeros(dist.shape))
     ##TODO convoluted way of saying r<d<r_2 to get into one condition for where
-    f_ij = np.where(np.abs(dist-(R+R_2)/2)<(R_2-R),k*(np.full(dist.shape,2*R)-dist),f_ij)
+    f_ij = np.where(np.abs(dist-(R+3*R*epsilon/2))<(R*epsilon/2),-k*(R*dist-np.full(dist.shape,(1+2*epsilon)*R**2)),f_ij)
     return f_ij
 
 class ABP(object):
@@ -51,8 +50,6 @@ class ABP(object):
         self.D = D #diffusion of polarity
         self.psi = potential
         self.rdot = self.v_0*self.directions()+np.sum(self.interaction_forces(),axis=1)
-
-
 
     def update(self,dt):
         self.rdot = self.v_0*self.directions()+np.sum(self.interaction_forces(),axis=1)
@@ -86,8 +83,6 @@ class ABP(object):
     def interaction_forces(self):
         """Uses psi to calculate f_ij, the magnitude of the force between each particle.
         Then multiplies f_ij by the normalised and wrapped vector between 2 particles."""
-        ##TODO currently returning an interaction force of 0
-        ##TODO implement a short distance repulsion force
         pvec = self.wrapped_pvec()
         f_ij = self.psi(pvec,R = self.R,k=self.k)
         pvec_normalised = self.normalise_3darr(pvec)
@@ -111,10 +106,6 @@ class ABP(object):
             direction_data[i,:,:] = self.directions()
             velocity_data[i,:,:] = self.rdot
         return r_data,direction_data,velocity_data
-
-    def save_movement_data(self,T,dt,loc,file_name):
-        r_data,direction_data,velocity_data = self.generate_movement_data(T,dt)
-        pd.write_csv()
    
     def csv_flatten(self,arr):
         """Flattens a 3d array into a 2d array suitable for storing
@@ -122,6 +113,7 @@ class ABP(object):
         return arr.reshape(arr.shape[0]*arr.shape[1],arr.shape[2])
     
     def get_parameter_dictionary(self):
+        ##TODO reverse engineer. Make this the starting point which you pass to ABP
         """Returns a dictionary of the current parameters of 
         the abp object"""
         p_dict = {
@@ -157,60 +149,13 @@ class ABP(object):
         s = ax.scatter(self.r[:,0],self.r[:,1])
         q = ax.quiver(self.r[:,0],self.r[:,1],self.directions()[:,0],self.directions()[:,1],
             headlength=10,headaxislength=10,scale=15/self.R)
-        
-    def animate_movement(self,T,dt):
-        """Animates the movement of the active brownian particles using a 
-        matplotlib quiver plot"""
-        r_data,direction_data,velocity_data = self.generate_movement_data(T,dt)
-        fig,ax = plt.subplots()
-        ax.set(xlim=(0,self.box_width),ylim=(0,self.box_width))
-        # directions = ax.quiver(r_data[0,:,0],r_data[0,:,1],direction_data[0,:,0],direction_data[0,:,1])
-        cells = ax.scatter(r_data[0,:,0],r_data[0,:,1],marker="o",s=100*np.pi*self.R**2)
-        velocities = ax.quiver(r_data[0,:,0],r_data[0,:,1],velocity_data[0,:,0],velocity_data[0,:,1],color="r",scale=20)
-        def update_anim(i):
-            # directions.set_offsets(r_data[i,:,:])
-            # directions.set_UVC(direction_data[i,:,0],direction_data[i,:,1])
-            velocities.set_offsets(r_data[i,:,:])
-            velocities.set_UVC(velocity_data[i,:,0],velocity_data[i,:,1])
-            cells.set_offsets(r_data[i,:,:])
-        anim = animation.FuncAnimation(fig,update_anim,frames=T)
-        return anim
-
-    def animate_movement_patch(self,T,dt,patch_type="circle"):
-        """Animates the movement of the active brownian particles using a 
-        matplotlib quiver plot"""
-        ##TODO sort arrow scaling
-        asp = [10,10,15] ##arrow shape parameters
-        r_data,direction_data,velocity_data = self.generate_movement_data(T,dt)
-        fig,ax = plt.subplots()
-        fig.set_size_inches(8,8)
-        ax.set(xlim=(0,self.box_width),ylim=(0,self.box_width))
-        directions = ax.quiver(r_data[0,:,0],r_data[0,:,1],direction_data[0,:,0],direction_data[0,:,1],
-            headaxislength=asp[0],headlength=asp[1],scale=asp[2])
-        velocities = ax.quiver(r_data[0,:,0],r_data[0,:,1],velocity_data[0,:,0],velocity_data[0,:,1],color="r",
-            headaxislength=asp[0],headlength=asp[1],scale=asp[2])
-        for cell in r_data[0,:,:]:
-            c = Ellipse(cell,self.R,self.R,fill=False,color="k")
-            p = ax.add_patch(c)
-        def update_anim(i):
-            sample = i*10
-            ax.clear()
-            ax.set(xlim=(0,self.box_width),ylim=(0,self.box_width))
-            directions = ax.quiver(r_data[sample,:,0],r_data[sample,:,1],direction_data[sample,:,0],direction_data[sample,:,1],
-                headaxislength=asp[0],headlength=asp[1],scale=asp[2])
-            velocities = ax.quiver(r_data[sample,:,0],r_data[sample,:,1],velocity_data[sample,:,0],velocity_data[sample,:,1],color="r",
-                headaxislength=asp[0],headlength=asp[1],scale=asp[2])
-            for cell in r_data[sample,:,:]:
-                c = Ellipse(cell,self.R,self.R,fill=False,color="k")
-                p = ax.add_patch(c)
-        anim = animation.FuncAnimation(fig,update_anim,frames=T//10)
-        return anim
 
 class Analysis(object):
     def __init__(self,data_name,parameters,T,dt):
         # self.data = open("data_name","r")
         df= pd.read_csv(data_name)
         self.T = T
+        self.dt = dt
         self.N = parameters["N"]
         self.r_data = np.array(df[["x1","x2"]]).reshape(T+1,self.N,2)
         self.v_data = np.array(df[["v1","v2"]]).reshape(T+1,self.N,2)
@@ -222,12 +167,23 @@ class Analysis(object):
         interval = num_time_steps*self.pm["dt"]
         4*self.p_dict["D"]+2*self.p_dict["v_0"]**2*tau_r*(interval-tau_r*(1-np.exp(-interval/tau_r)))
     
-    def generate_msd_data(self,num_time_steps):
-        interval = num_time_steps*self.p_dict["dt"]#
-        r_diff = self.r_data[1::,:,:]-self.r_data[:-1:,:,:] ## differences of all the positions one time step ahead
+    def msd(self,m):
+        interval = m*self.dt
+        r_diff = np.empty((0,50,2))
+        for i in range(0,m):
+            if i<self.T%m:
+                r_diff = np.append(r_diff,self.r_data[i:-m+i:m]-self.r_data[i+m::m],axis=0)
+            else:
+                r_diff = np.append(r_diff,self.r_data[i:-2*m+i:m]-self.r_data[i+m:-m+i:m],axis=0) 
         norm_r_diff = lag.norm(r_diff,axis=2)
-        msd = np.sum(norm_r_diff**2,axis=1)/self.N
+        msd = np.mean(norm_r_diff**2)
         return msd
+    
+    def generate_msd_data(self,m_range):
+        msd_data = np.zeros(m_range.shape)
+        for i,m in enumerate(m_range):
+            msd_data[i] = self.msd(m)
+        return msd_data
 
     def animate_movement_patch(self,patch_type="circle"):
         """Animates the movement of the active brownian particles using a 
