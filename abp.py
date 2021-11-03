@@ -24,6 +24,7 @@ def repulsion_cohesion_potential(pvec,R=1,R_2=None,k=1):
     return f_ij
 
 class ABP(object):
+    ##TODO add **kwargs ? 
     def __init__(self,N,v_0=0.1,r=np.zeros(2),thetas=np.zeros(2),box_width=10,dim=2,D=0.5,R=1,k=1,potential=short_scale_repulsion):
         """Creates N Active Brownian Particles with uniformly random
         initial positions and directions unless specified. V_0 is the 
@@ -120,14 +121,20 @@ class ABP(object):
         in a dataframe"""
         return arr.reshape(arr.shape[0]*arr.shape[1],arr.shape[2])
     
-    def get_parameter_suffix(self):
-        """Generates a parameter suffix for csv naming"""
+    def get_parameter_dictionary(self):
+        """Returns a dictionary of the current parameters of 
+        the abp object"""
         p_dict = {
             "v_0":self.v_0,
             "box_width":self.box_width,
             "D":self.D,
             "N":self.N,
             "k":self.k}
+        return p_dict 
+
+    def get_parameter_suffix(self):
+        """Generates a parameter suffix for csv naming"""
+        p_dict = self.get_parameter_dictionary()
         out = "__".join([key+"_"+str(p_dict[key]) for key in p_dict])
         return out
 
@@ -198,52 +205,58 @@ class ABP(object):
                 p = ax.add_patch(c)
         anim = animation.FuncAnimation(fig,update_anim,frames=T//10)
         return anim
-        
-def slider_animation(self):
-    """Has sliders for parameters and generates animations in real time. """
-    pass 
+
 class Analysis(object):
-    def __init__(self,data_name,parameters):
+    def __init__(self,data_name,parameters,T,dt):
         # self.data = open("data_name","r")
-        self.data = pd.read_csv("data_name")
+        df= pd.read_csv(data_name)
+        self.T = T
+        self.N = parameters["N"]
+        self.r_data = np.array(df[["x1","x2"]]).reshape(T+1,self.N,2)
+        self.v_data = np.array(df[["v1","v2"]]).reshape(T+1,self.N,2)
+        self.d_data = np.array(df[["d1","d2"]]).reshape(T+1,self.N,2)
         self.p_dict = parameters
 
     def analytic_msd(self,num_time_steps):
         tau_r =1 #what is persistence time?
         interval = num_time_steps*self.pm["dt"]
-        4*self.pm["D"]+2*self.p_dict["v_0"]**2*tau_r*(interval-tau_r*(1-np.exp(-interval/tau_r)))
+        4*self.p_dict["D"]+2*self.p_dict["v_0"]**2*tau_r*(interval-tau_r*(1-np.exp(-interval/tau_r)))
     
     def generate_msd_data(self,num_time_steps):
-        interval = num_time_steps*self.p_dict["dt"]
-        
+        interval = num_time_steps*self.p_dict["dt"]#
+        r_diff = self.r_data[1::,:,:]-self.r_data[:-1:,:,:] ## differences of all the positions one time step ahead
+        norm_r_diff = lag.norm(r_diff,axis=2)
+        msd = np.sum(norm_r_diff**2,axis=1)/self.N
+        return msd
 
-    def animate_movement_patch(self,T,dt,patch_type="circle"):
+    def animate_movement_patch(self,patch_type="circle"):
         """Animates the movement of the active brownian particles using a 
         matplotlib quiver plot"""
         ##TODO sort arrow scaling
         asp = [10,10,15] ##arrow shape parameters
-        r_data,direction_data,velocity_data = self.generate_movement_data(T,dt)
+        sample_rate = 10
+        r_data,direction_data,velocity_data = self.r_data,self.d_data,self.v_data
         fig,ax = plt.subplots()
         fig.set_size_inches(8,8)
-        ax.set(xlim=(0,self.box_width),ylim=(0,self.box_width))
+        ax.set(xlim=(0,self.p_dict["box_width"]),ylim=(0,self.p_dict["box_width"]))
         directions = ax.quiver(r_data[0,:,0],r_data[0,:,1],direction_data[0,:,0],direction_data[0,:,1],
             headaxislength=asp[0],headlength=asp[1],scale=asp[2])
         velocities = ax.quiver(r_data[0,:,0],r_data[0,:,1],velocity_data[0,:,0],velocity_data[0,:,1],color="r",
             headaxislength=asp[0],headlength=asp[1],scale=asp[2])
         for cell in r_data[0,:,:]:
-            c = Ellipse(cell,self.R,self.R,fill=False,color="k")
+            c = Ellipse(cell,1,1,fill=False,color="k")
             p = ax.add_patch(c)
         def update_anim(i):
-            sample = i*10
+            sample = i*sample_rate
             ax.clear()
-            ax.set(xlim=(0,self.box_width),ylim=(0,self.box_width))
+            ax.set(xlim=(0,self.p_dict["box_width"]),ylim=(0,self.p_dict["box_width"]))
             directions = ax.quiver(r_data[sample,:,0],r_data[sample,:,1],direction_data[sample,:,0],direction_data[sample,:,1],
                 headaxislength=asp[0],headlength=asp[1],scale=asp[2])
             velocities = ax.quiver(r_data[sample,:,0],r_data[sample,:,1],velocity_data[sample,:,0],velocity_data[sample,:,1],color="r",
                 headaxislength=asp[0],headlength=asp[1],scale=asp[2])
             for cell in r_data[sample,:,:]:
-                c = Ellipse(cell,self.R,self.R,fill=False,color="k")
+                c = Ellipse(cell,1,1,fill=False,color="k")
                 p = ax.add_patch(c)
-        anim = animation.FuncAnimation(fig,update_anim,frames=T//10)
+        anim = animation.FuncAnimation(fig,update_anim,frames=self.T//sample_rate)
         return anim
         
