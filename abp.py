@@ -94,6 +94,9 @@ class ABP(object):
     
     def generate_movement_data(self,T,dt):
         """Generates position and direction data for T time steps of length dt"""
+        ##TODO do we need t_data?
+        ##TODO save this as a csv
+        #t_data = np.linspace(0,T,int(T//dt))
         r_data = np.zeros((T+1,self.N,self.dim))
         direction_data = np.zeros((T+1,self.N,self.dim))
         velocity_data = np.zeros((T+1,self.N,self.dim))
