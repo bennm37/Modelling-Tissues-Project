@@ -170,16 +170,24 @@ class Analysis(object):
         interval = num_time_steps*self.pm["dt"]
         4*self.p_dict["D"]+2*self.p_dict["v_0"]**2*tau_r*(interval-tau_r*(1-np.exp(-interval/tau_r)))
     
+    # def msd(self,m):
+    #     interval = m*self.dt
+    #     r_diff = np.empty((0,self.N,2))
+    #     for i in range(0,m):
+    #         if i<self.T%m:
+    #             r_diff = np.append(r_diff,self.r_data[i:-m+i:m]-self.r_data[i+m::m],axis=0)
+    #         else:
+    #             r_diff = np.append(r_diff,self.r_data[i:-2*m+i:m]-self.r_data[i+m:-m+i:m],axis=0) 
+    #     norm_r_diff = lag.norm(r_diff,axis=2)
+    #     msd = np.mean(norm_r_diff**2)
+    #     return msd
+
     def msd(self,m):
-        interval = m*self.dt
-        r_diff = np.empty((0,50,2))
-        for i in range(0,m):
-            if i<self.T%m:
-                r_diff = np.append(r_diff,self.r_data[i:-m+i:m]-self.r_data[i+m::m],axis=0)
-            else:
-                r_diff = np.append(r_diff,self.r_data[i:-2*m+i:m]-self.r_data[i+m:-m+i:m],axis=0) 
-        norm_r_diff = lag.norm(r_diff,axis=2)
-        msd = np.mean(norm_r_diff**2)
+        # msd = 0.0
+        # for i in range(self.T-m):
+        #     msd += np.sum((self.r_data[i+m,:]-self.r_data[i,:])**2)
+        # msd /= (self.T-m)
+        msd = np.sum(np.sum((self.r_data[m:,:]-self.r_data[:(self.T-m),:])**2,axis=1))/(self.T-m)
         return msd
     
     def generate_msd_data(self,m_range):
