@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.patches import Polygon,Ellipse
 from IPython.display import HTML
-import pandas as pd 
+import pandas as pd
+import os  
 
 def short_scale_repulsion(pvec,R=0.1,k=1):
     ##uses repulsion force k(2*R-r_ij) from active colloid paper
@@ -13,8 +14,7 @@ def short_scale_repulsion(pvec,R=0.1,k=1):
     f_ij = np.where(dist<R,-k*(np.full(dist.shape,2*R)-dist),np.zeros(dist.shape))
     return f_ij
 
-def repulsion_cohesion_potential(pvec,R=1,k=1,epsilon=0.2):
-
+def repulsion_cohesion_potential(pvec,R=1,k=1,epsilon=0.15):
     """Uses potential from the glassy behaviour paper[1], setting b_i =1 """
     dist = lag.norm(pvec,axis=2)
     f_ij = np.where(dist<R+R*epsilon,k*(R*dist-np.full(dist.shape,R**2)),np.zeros(dist.shape))
@@ -36,7 +36,7 @@ class ABP(object):
         #TODO protect against bad input
         self.dim = 2
         self.R = 1
-        self.paramaters = parameters
+        self.parameters = parameters
         self.v_0 = parameters["v_0"]
         self.N = parameters["N"]
         self.k = parameters["k"]
@@ -88,28 +88,24 @@ class ABP(object):
         forces[:,:,1] = f_ij*pvec_normalised[:,:,1]
         return forces
     
-    def generate_movement_data(self,T,dt):
+    def generate_movement_data(self,T,dt,sample_rate):
         """Generates position and direction data for T time steps of length dt"""
         ##TODO do we need t_data?
-        ##TODO save this as a csv
         #t_data = np.linspace(0,T,int(T//dt))
-        r_data = np.zeros((T+1,self.N,self.dim))
-        direction_data = np.zeros((T+1,self.N,self.dim))
-        velocity_data = np.zeros((T+1,self.N,self.dim))
+        num_samples = np.floor(T//sample_rate)
+        r_data = np.zeros((num_samples,self.N,self.dim))
+        direction_data = np.zeros((num_samples,self.N,self.dim))
+        velocity_data = np.zeros((num_samples,self.N,self.dim))
         r_data[0,:,:] = self.r
         direction_data[0,:,:] = self.directions()
         velocity_data[0,:,:] = self.rdot
-        for i in range(1,T+1):
-            self.update(dt)
+        for i in range(1,num_samples):
+            for j in range(sample_rate):
+                self.update(dt)
             r_data[i,:,:] = self.r
             direction_data[i,:,:] = self.directions()
             velocity_data[i,:,:] = self.rdot
         return r_data,direction_data,velocity_data
-   
-    def csv_flatten(self,arr):
-        """Flattens a 3d array into a 2d array suitable for storing
-        in a dataframe"""
-        return arr.reshape(arr.shape[0]*arr.shape[1],arr.shape[2])
 
     def get_parameter_suffix(self):
         """Generates a parameter suffix for csv naming"""
@@ -117,18 +113,27 @@ class ABP(object):
         out = "__".join([key+"_"+str(p_dict[key]) for key in p_dict])
         return out
 
-    def generate_csv(self,T,dt):
-        r,d,v = self.generate_movement_data(T,dt)
-        r = self.csv_flatten(r)
-        d = self.csv_flatten(d)
-        v = self.csv_flatten(v)
-        data = np.append(r,d,axis=1)
-        data = np.append(data,v,axis=1)
+    def generate_csv(self,T,dt,sample_rate):
+        """Makes a folder named after parameter values 
+        and saves the positions velocities and directions 
+        at each sample rate dts"""
+        folder_name = "abp_data__"+self.get_parameter_suffix()
+        os.mkdir(f"./data/{folder_name}")
+        num_samples = int(np.floor(T//sample_rate))
         columns = ["x1","x2","d1","d2","v1","v2"]
+        data = np.append(self.r,self.directions(),axis=1)
+        data = np.append(data,self.rdot,axis=1)
         data_frame = pd.DataFrame(data,columns=columns)
-        filename = "abp_data__"+self.get_parameter_suffix()+".csv"
-        data_frame.to_csv('./data/'+filename)
-        return filename
+        data_frame.to_csv(f"./data/{folder_name}/dat_0.csv")
+        for i in range(1,num_samples):
+            for j in range(sample_rate):
+                self.update(dt)
+            data = np.append(self.r,self.directions(),axis=1)
+            data = np.append(data,self.rdot,axis=1)
+            data_frame = pd.DataFrame(data,columns=columns)
+            data_frame.to_csv(f"./data/{folder_name}/dat_{i}.csv")
+
+
 
 ##DISPLAYERS
     def display_state(self):
@@ -139,8 +144,7 @@ class ABP(object):
 
 class Analysis(object):
     def __init__(self,data_name,parameters,T,dt):
-        # self.data = open("data_name","r")
-        df= pd.read_csv(data_name)
+        df = pd.read_csv(data_name)
         self.T = T
         self.dt = dt
         self.N = parameters["N"]
@@ -155,15 +159,7 @@ class Analysis(object):
         4*self.p_dict["D"]+2*self.p_dict["v_0"]**2*tau_r*(interval-tau_r*(1-np.exp(-interval/tau_r)))
     
     def msd(self,m):
-        interval = m*self.dt
-        r_diff = np.empty((0,50,2))
-        for i in range(0,m):
-            if i<self.T%m:
-                r_diff = np.append(r_diff,self.r_data[i:-m+i:m]-self.r_data[i+m::m],axis=0)
-            else:
-                r_diff = np.append(r_diff,self.r_data[i:-2*m+i:m]-self.r_data[i+m:-m+i:m],axis=0) 
-        norm_r_diff = lag.norm(r_diff,axis=2)
-        msd = np.mean(norm_r_diff**2)
+        msd = np.sum(np.sum((self.r_data[m:,:]-self.r_data[:(self.T-m),:])**2,axis=1))/(self.T-m)
         return msd
     
     def generate_msd_data(self,m_range):

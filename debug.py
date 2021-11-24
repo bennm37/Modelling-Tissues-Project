@@ -1,6 +1,21 @@
 from abp import * 
-def N_given_packing_fraction(phi,box_width):
-    N = np.floor((phi*box_width**2)/np.pi)
-    return int(N)
-box_width = 20
-glass = {"N":N_given_packing_fraction(1,box_width),"v_0":0.01,"D":0.1} 
+
+def box_width_from_phi(N,phi):
+    return np.round(np.sqrt(N*np.pi/phi),1)  
+N = 100
+glass_dict = {"N":N,"v_0":0.01,"D":0.1,"k":1,"box_width":box_width_from_phi(N,1)} 
+dense_liquid_dict = {"N":N,"v_0":0.1,"D":0.1,"k":1,"box_width":box_width_from_phi(N,1)} 
+phase_seperated_dict = {"N":N,"v_0":0.1,"D":0.001,"k":1,"box_width":box_width_from_phi(N,0.6)} 
+normal_liquid_dict = {"N":N,"v_0":0.1,"D":0.1,"k":1,"box_width":box_width_from_phi(N,0.6)} 
+
+
+# glass = ABP(glass_dict,repulsion_cohesion_potential)
+# glass.generate_csv(100000,0.01,100)
+dense_liquid = ABP(dense_liquid_dict,repulsion_cohesion_potential)
+dense_liquid.generate_csv(100000,0.01,100)
+phase_seperated = ABP(phase_seperated_dict,repulsion_cohesion_potential)
+phase_seperated.generate_csv(100000,0.01,100)
+normal_liquid = ABP(normal_liquid_dict,repulsion_cohesion_potential)
+normal_liquid.generate_csv(100000,0.01,100)
+
+
