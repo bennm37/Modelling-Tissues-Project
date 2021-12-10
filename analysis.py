@@ -26,15 +26,15 @@ class Analysis(object):
             self.d_data = np.array(df[["d1","d2"]]).reshape(self.n_saves,self.N,2)
         
         if data_type == "pyABP":
-            dat_content = [i.strip().split() for i in open(f"{data_name}/data1.dat")]
+            dat_content = [i.strip().split() for i in open(f"{data_name}/data0.dat")]
             columns = dat_content[0]
             data = np.zeros((self.n_saves,self.N,8))
-            for i in range(0,self.n_saves):
+            for i in range(1,self.n_saves):
                 dat_i = [i.strip().split() for i in open(f"{data_name}/data{i}.dat")]
                 data[i,:,:] = dat_i[1:]
             df = pd.DataFrame(data.reshape(self.N*self.n_saves,8),columns=columns)
-            self.r_data = np.array(df[["x1","x2"]]).reshape(self.n_saves,self.N,2)
-            self.v_data = np.array(df[["v1","v2"]]).reshape(self.n_saves,self.N,2)
+            self.r_data = np.array(df[["x","y"]]).reshape(self.n_saves,self.N,2)
+            self.v_data = np.array(df[["vx","vy"]]).reshape(self.n_saves,self.N,2)
             self.theta_data = np.array(df["theta"]).reshape(self.n_saves,self.N,1)
             self.d_data = np.append(np.cos(self.theta_data),np.sin(self.theta_data),axis = 2)
 
