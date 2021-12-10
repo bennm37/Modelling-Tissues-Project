@@ -47,7 +47,7 @@ delta_test_dict = {
 # normal_liquid.generate_csv(100)
 
 ##DELTA POTENTIAL TESTS
-deltas = [0.05,0.1,0.15,0.2,0.25]
+deltas = [0.3,0.35,0.4,0.45,0.5,1,2]
 for delta in deltas:
     def delta_potential(pvec,R=1,k=1,epsilon = 0.15,delta=delta):
         return repulsion_cohesion_potential2(pvec,R,k,epsilon,delta)
@@ -55,7 +55,7 @@ for delta in deltas:
     folder_name = f"delta_{delta}"
     delta_test.generate_csv(100,folder_name)
     a = Analysis(f"./data/{folder_name}",test_dict,1000)
-    anim = a.animate_movement_patch(sample_rate=100)
+    anim = a.animate_movement_patch(sample_rate=10)
     anim.save(f"media/delta_{delta}_anim.mp4")
 
 # a2 = Analysis("C:/Users/bennm/Documents/UNI/Year3/pyABP/pyABP/test_data1",pyABP_dict,100,data_type="pyABP")
