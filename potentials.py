@@ -58,10 +58,10 @@ def repulsion_cohesion_potential2(pvec,R=1,k=1,epsilon = 0.15,delta=0.2):
 #     f_ij = np.where(np.abs(dist-(R+3*R*epsilon/2))<(R*epsilon/2),-k*(R*dist-np.full(dist.shape,(1+2*epsilon)*R**2)),f_ij)
 #     return f_ij
 
-def parabola_potential(pvec,R,k=1,epsilon=0.15):
+def parabola_potential(pvec,R,k=1,epsilon=0.5,l=-0.5):
     ##calculated to give y intercept k,minimum l and a root at 1+epsilon
-    a = k/(1+epsilon)
-    b = -(2+epsilon)*k/(1+epsilon)
+    b = 2*(l-k)*(1+np.sqrt(1-k/(k-l)))/(1+epsilon)
+    a = (b**2)/(4*(k-l))
     c = k
     ##this finds R_i +R_j for each i and j in 1,...N
     R_sum = np.sum(np.meshgrid(R,R),axis=0)

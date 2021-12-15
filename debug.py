@@ -28,12 +28,12 @@ pyABP_dict = {
 delta_test_dict = {
     "R":np.ones(N),
     "N":N,
-    "v_0":0.1,
+    "v_0":0.01,
     "D":0.1,
     "k":1,
     "box_width":box_width_from_phi(N,0.6),
     "T":100000,
-    "dt": 0.01,
+    "dt": 0.03,
     } 
 
 ##DATA GENERATION
@@ -47,19 +47,36 @@ delta_test_dict = {
 # normal_liquid.generate_csv(100)
 
 ##DELTA POTENTIAL TESTS
-deltas = [0.3,0.35,0.4,0.45,0.5,1,2]
-for delta in deltas:
-    def delta_potential(pvec,R=1,k=1,epsilon = 0.15,delta=delta):
-        return repulsion_cohesion_potential2(pvec,R,k,epsilon,delta)
-    delta_test = ABP (delta_test_dict,delta_potential)
-    folder_name = f"delta_{delta}"
-    delta_test.generate_csv(100,folder_name)
+# deltas = [0.5]
+# for delta in deltas:
+#     def delta_potential(pvec,R=1,k=1,epsilon = 0.15,delta=delta):
+#         return repulsion_cohesion_potential2(pvec,R,k,epsilon,delta)
+#     delta_test = ABP(delta_test_dict,delta_potential)
+#     delta_test.r = (delta_test.box_width/2)*np.ones((100,2))
+#     folder_name = f"delta_{delta}_centre2"
+#     delta_test.generate_csv(100,folder_name)
+#     a = Analysis(f"./data/{folder_name}",test_dict,1000)
+#     anim = a.animate_movement_patch(sample_rate=10)
+#     anim.save(f"media/delta_{delta}_centre2_anim.mp4")
+
+##PARABOLA POTENTIAL TESTS
+ls = [-0.05,-0.1,-0.2,-0.4,-0.6,-0.8,-1]
+for l in ls:
+    def l_potential(pvec,R=1,k=1,epsilon = 0.5,l=l):
+        return parabola_potential(pvec,R,k,epsilon,l)
+    l_test = ABP(delta_test_dict,l_potential)
+    # l_test.r = (l_test.box_width/2)*np.ones((100,2))
+    folder_name = f"l_{l}"
+    l_test.generate_csv(100,folder_name)
     a = Analysis(f"./data/{folder_name}",test_dict,1000)
     anim = a.animate_movement_patch(sample_rate=10)
-    anim.save(f"media/delta_{delta}_anim.mp4")
+    anim.save(f"media/l_{l}_anim.mp4")
 
-# a2 = Analysis("C:/Users/bennm/Documents/UNI/Year3/pyABP/pyABP/test_data1",pyABP_dict,100,data_type="pyABP")
-# anim = a2.animate_movement_patch(sample_rate=1)
-# # plt.show()
-# anim.save("media/pyabp_test.mp4")
 
+##TEST ZONE
+l = -0.5
+def l_potential(pvec,R=1,k=1,epsilon = 0.5,l=l):
+    return parabola_potential(pvec,R,k,epsilon,l)
+l_test = ABP(delta_test_dict,l_potential)
+
+print(l_test.interaction_forces()==np.nan)
