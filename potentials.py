@@ -32,6 +32,7 @@ def repulsion_cohesion_potential(pvec,R=1,k=1,epsilon = 0.15):
     return force
     
 
+
 def repulsion_cohesion_potential2(pvec,R=1,k=1,epsilon = 0.15,delta=0.2):
     ##uses repulsion force k(2*R-r_ij) from active colloid paper
     ##this finds R_i +R_j for each i and j in 1,...N
@@ -49,6 +50,22 @@ def repulsion_cohesion_potential2(pvec,R=1,k=1,epsilon = 0.15,delta=0.2):
     force = np.where(x>1+epsilon+delta,out_range,force)
     return force
 
+def repulsion_cohesion_potential3(pvec,R=1,k=1,k_2=2,epsilon = 0.1):
+    ##uses repulsion force k(2*R-r_ij) from active colloid paper
+    ##this finds R_i +R_j for each i and j in 1,...N
+    R_sum = np.sum(np.meshgrid(R,R),axis=0)
+    dist = lag.norm(pvec,axis=2)
+    ##we will work with the distances divided by the sum of the 
+    ## 2 radii 
+    x = dist/R_sum
+    in_range1 = -k*x+k
+    in_range2 = -k_2*x+k_2
+    in_range3 = k_2*x-k_2*(1+epsilon)
+    out_range = np.zeros(dist.shape)
+    force = np.where(x<1,in_range1,in_range2)
+    force = np.where(x>1,in_range2,in_range3)
+    force = np.where(x>1+epsilon,out_range,force)
+    return -force
 
 # def repulsion_cohesion_potential2(pvec,R=1,k=1,epsilon=0.15,delta=0.2):
 #     """Uses potential from the glassy behaviour paper[1], setting b_i =1 """
@@ -72,5 +89,5 @@ def parabola_potential(pvec,R,k=1,epsilon=0.5,l=-0.5):
     in_range = a*x**2+b*x+c
     out_range = np.zeros(dist.shape)
     force = np.where(x<1+epsilon,in_range,out_range)
-    return force
+    return -force
 

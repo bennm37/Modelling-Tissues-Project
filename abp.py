@@ -26,7 +26,6 @@ class ABP():
         self.R = parameters["R"]
         self.v_0 = parameters["v_0"]
         self.N = parameters["N"]
-        self.k = parameters["k"]
         self.D = parameters["D"] #diffusion of polarity
         self.box_width = parameters["box_width"]
         self.T = parameters["T"]
@@ -69,7 +68,8 @@ class ABP():
         """Uses psi to calculate f_ij, the magnitude of the force between each particle.
         Then multiplies f_ij by the normalised and wrapped vector between 2 particles."""
         pvec = self.wrapped_pvec()
-        f_ij = -self.psi(pvec,R = self.R,k=self.k)
+        ##REMOVED k here so specify potential parameters before passing potential
+        f_ij = -self.psi(pvec,R = self.R)
         pvec_normalised = self.normalise_3darr(pvec)
         # print(pvec_normalised)
         forces = np.zeros(pvec.shape)
@@ -77,11 +77,11 @@ class ABP():
         forces[:,:,1] = f_ij*pvec_normalised[:,:,1]
         return forces
     
-    def generate_movement_data(self,sample_rate):
+    def generate_movement_data(self,sample_rate,debug=False):
         """Generates position and direction data for T time steps of length dt"""
         ##TODO do we need t_data?
         #t_data = np.linspace(0,T,int(T//dt))
-        num_samples = np.floor(self.T//sample_rate)
+        num_samples = np.floor(self.T//sample_rate).astype(np.int)
         r_data = np.zeros((num_samples,self.N,self.dim))
         direction_data = np.zeros((num_samples,self.N,self.dim))
         velocity_data = np.zeros((num_samples,self.N,self.dim))
