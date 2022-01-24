@@ -71,7 +71,6 @@ class ABP():
         ##REMOVED k here so specify potential parameters before passing potential
         f_ij = -self.psi(pvec,R = self.R)
         pvec_normalised = self.normalise_3darr(pvec)
-        # print(pvec_normalised)
         forces = np.zeros(pvec.shape)
         forces[:,:,0] = f_ij*pvec_normalised[:,:,0]
         forces[:,:,1] = f_ij*pvec_normalised[:,:,1]
