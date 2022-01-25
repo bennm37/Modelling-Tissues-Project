@@ -54,8 +54,7 @@ class Analysis(object):
         pvec = self.pvec(t)
         # if the distance between particles is more than half the width of the
         # box then the distance is measured the other way
-        ##TODO check this
-        return pvec - np.where(np.abs(pvec)>L,np.sign(pvec)*L,np.zeros(pvec.shape))
+        return pvec - np.where(np.abs(pvec)>L/2,np.sign(pvec)*L,np.zeros(pvec.shape))
     
     def analytic_msd(self,num_time_steps):
         tau_r =1 #what is persistence time?

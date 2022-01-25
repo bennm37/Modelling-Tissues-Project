@@ -59,7 +59,7 @@ class ABP():
         pvec = self.pvec()
         # if the distance between particles is more than half the width of the
         # box then the distance is measured the other way
-        return pvec - np.where(np.abs(pvec)>L,np.sign(pvec)*L,np.zeros(pvec.shape))
+        return pvec - np.where(np.abs(pvec)>L/2,np.sign(pvec)*L,np.zeros(pvec.shape))
     
     def directions(self):
         return np.array([np.cos(self.thetas),np.sin(self.thetas)]).T
