@@ -50,7 +50,7 @@ def repulsion_cohesion_potential2(pvec,R=1,k=1,epsilon = 0.15,delta=0.2):
     force = np.where(x>1+epsilon+delta,out_range,force)
     return force
 
-def repulsion_cohesion_potential3(pvec,R=1,k=1,k_2=2,epsilon = 0.1):
+def k_2_potential(pvec,R=1,k=1,k_2=2,epsilon = 0.1):
     ##uses repulsion force k(2*R-r_ij) from active colloid paper
     ##this finds R_i +R_j for each i and j in 1,...N
     R_sum = np.sum(np.meshgrid(R,R),axis=0)
@@ -63,9 +63,9 @@ def repulsion_cohesion_potential3(pvec,R=1,k=1,k_2=2,epsilon = 0.1):
     in_range3 = k_2*x-k_2*(1+epsilon)
     out_range = np.zeros(dist.shape)
     force = np.where(x<1,in_range1,in_range2)
-    force = np.where(x>1,in_range2,in_range3)
+    force = np.where(x>1+epsilon/2,in_range3,force)
     force = np.where(x>1+epsilon,out_range,force)
-    return -force
+    return force
 
 # def repulsion_cohesion_potential2(pvec,R=1,k=1,epsilon=0.15,delta=0.2):
 #     """Uses potential from the glassy behaviour paper[1], setting b_i =1 """
