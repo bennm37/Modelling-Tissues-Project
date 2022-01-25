@@ -32,3 +32,46 @@ normal_liquid_dict = {
     "k":1,
     "box_width":box_width_from_phi(N,0.6)
     } 
+test_dict = {
+    "R":np.ones(N),
+    "N":N,
+    "v_0":0.01,
+    "D":0.1,
+    "k":1,
+    "box_width":box_width_from_phi(N,0.6),
+    "T":100000,
+    "dt": 0.01,
+    } 
+
+pyABP_dict = {
+    "R":np.ones(N),
+    "N":2000,
+    "v_0":0.1,
+    "D":0.001,
+    "k":1,
+    "box_width":50,
+    "T":100000,
+    "dt": 0.01,
+    } 
+
+k2_test_dict = {
+    "R":np.ones(N),
+    "N":N,
+    "v_0":0.01,
+    "D":0.1,
+    "k":1,
+    "box_width":box_width_from_phi(N,0.6),
+    "T":100000,
+    "dt": 0.03,
+    } 
+
+k_2_test_dict = {
+    "R":np.ones(N),
+    "N":N,
+    "v_0":0.01,
+    "D":0.1,
+    "k":1,
+    "box_width":box_width_from_phi(N,0.6),
+    "T":100000,
+    "dt": 0.03,
+    } 

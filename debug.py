@@ -1,51 +1,18 @@
+from cv2 import circle
 from abp import * 
 from analysis import Analysis
+from circle_test import circle_test, circle_test_setup
+from potentials import k_2_potential
 ##TODO find better way of importing to avoid cluttering namespace
 from parameter_dictionaries import *
 
-N = 100
-test_dict = {
-    "R":np.ones(N),
-    "N":N,
-    "v_0":0.01,
-    "D":0.1,
-    "k":1,
-    "box_width":box_width_from_phi(N,0.6),
-    "T":100000,
-    "dt": 0.01,
-    } 
 
-pyABP_dict = {
-    "R":np.ones(N),
-    "N":2000,
-    "v_0":0.1,
-    "D":0.001,
-    "k":1,
-    "box_width":50,
-    "T":100000,
-    "dt": 0.01,
-    } 
-
-delta_test_dict = {
-    "R":np.ones(N),
-    "N":N,
-    "v_0":0.01,
-    "D":0.1,
-    "k":1,
-    "box_width":box_width_from_phi(N,0.6),
-    "T":100000,
-    "dt": 0.03,
-    } 
-
-##DATA GENERATION
-# glass = ABP(glass_dict,repulsion_cohesion_potential)
-# glass.generate_csv(100)
-# dense_liquid = ABP(dense_liquid_dict,repulsion_cohesion_potential)
-# dense_liquid.generate_csv(100)
-# phase_seperated = ABP(phase_seperated_dict,repulsion_cohesion_potential)
-# phase_seperated.generate_csv(100)
-# normal_liquid = ABP(normal_liquid_dict,repulsion_cohesion_potential)
-# normal_liquid.generate_csv(100)
+##CENTRE TEST PACKING FRACTION 1
+k_2s = [1,1.2,1.4,1.6,1.8,2]
+epsilons = [0.05,0.1,0.15,0.2,0.25] 
+for k_2 in k_2s:
+    for epsilon in epsilons:
+        folder_name = circle_test_setup(k_2_potential,[1,k_2,epsilon],k2_test_dict)
 
 ##CENTRE TESTS
 # k_2s = [1]
@@ -76,11 +43,11 @@ delta_test_dict = {
 
 
 ##TESTING g(r) -radial distribution function 
-epsilon = 0.05
-k_2 = 1
-# folder_name = f"k_2_{k_2}_e_{epsilon}v2"
-folder_name = "l_-0.1"
+# epsilon = 0.05
+# k_2 = 1
+# # folder_name = f"k_2_{k_2}_e_{epsilon}v2"
+# folder_name = "l_-0.1"
 
-a = Analysis(f"./data/{folder_name}",test_dict,1000)
-print(a.r_data.shape)
-a.g_r(1)
+# a = Analysis(f"./data/{folder_name}",test_dict,1000)
+# print(a.r_data.shape)
+# a.g_r(1)
