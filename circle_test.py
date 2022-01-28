@@ -4,22 +4,11 @@ from parameter_dictionaries import *
 from potentials import *
 from matplotlib.widgets import Slider,RadioButtons
 
-N = 100
-test_dict = {
-    "R":np.ones(N),
-    "N":N,
-    "v_0":0.01,
-    "D":0.1,
-    "box_width":box_width_from_phi(N,0.6),
-    "T":100000,
-    "dt": 0.01,
-    }
-
 def circle_test_setup(potential,potential_parameters,parameters=test_dict):
     ##SETUP 
     N = parameters["N"]
     bw = parameters["box_width"]
-    start_radius = np.sqrt(bw)
+    start_radius = np.sqrt(N)
     # n = np.sqrt(np.linspace(0,N,N,endpoint=False))*np.pi
     # uniform_spacing = start_radius*np.array([np.cos(n)-n*np.sin(n),np.sin(n)+n*np.cos(n)])
     thetas = np.random.uniform(0,2*np.pi,N)

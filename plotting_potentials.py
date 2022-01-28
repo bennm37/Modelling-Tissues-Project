@@ -56,4 +56,4 @@ def parameter_potential_plot(potential,slider_names,slider_ranges=None,slider_in
             s.on_changed(update)
         plt.show()
 
-parameter_potential_plot(k_2_potential,["k","k2","epsilon"],slider_init=[1,0.15,-1],slider_ranges=[(0,1),(0,3),(0,5)])
+# parameter_potential_plot(k_2_potential,["k","k2","epsilon"],slider_init=[1,0.15,-1],slider_ranges=[(0,1),(0,3),(0,5)])

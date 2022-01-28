@@ -8,11 +8,12 @@ from parameter_dictionaries import *
 
 
 ##CENTRE TEST PACKING FRACTION 1
-k_2s = [1,1.2,1.4,1.6,1.8,2]
-epsilons = [0.05,0.1,0.15,0.2,0.25] 
+k_2s = [0,0.4,0.8,1.2,1.6,2]
+epsilons = [0.05,0.1,0.15,0.2,0.25,0.3] 
 for k_2 in k_2s:
     for epsilon in epsilons:
         folder_name = circle_test_setup(k_2_potential,[1,k_2,epsilon],k2_test_dict)
+
 
 ##CENTRE TESTS
 # k_2s = [1]

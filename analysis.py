@@ -107,12 +107,12 @@ class Analysis(object):
         fig,ax = plt.subplots()
         fig.set_size_inches(8,8)
         ax.set(xlim=(0,self.p_dict["box_width"]),ylim=(0,self.p_dict["box_width"]))
-        directions = ax.quiver(r_data[frame_no,:,0],r_data[frame_no,:,1],direction_data[frame_no,:,0],direction_data[0,:,1],
+        directions = ax.quiver(r_data[frame_no,:,0],r_data[frame_no,:,1],direction_data[frame_no,:,0],direction_data[frame_no,:,1],
             headaxislength=asp[0],headlength=asp[1],scale=asp[2])
-        velocities = ax.quiver(r_data[frame_no,:,0],r_data[frame_no,:,1],velocity_data[frame_no,:,0],velocity_data[0,:,1],color="r",
+        velocities = ax.quiver(r_data[frame_no,:,0],r_data[frame_no,:,1],velocity_data[frame_no,:,0],velocity_data[frame_no,:,1],color="r",
             headaxislength=asp[0],headlength=asp[1],scale=asp[2])
         for cell in r_data[frame_no,:,:]:
-            c = Ellipse(cell,1,1,fill=False,color="k")
+            c = Ellipse(cell,2,2,fill=False,color="k")
             p = ax.add_patch(c)
 
     def animate_movement_patch(self,sample_rate =10,patch_type="circle"):

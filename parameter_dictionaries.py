@@ -75,3 +75,13 @@ k_2_test_dict = {
     "T":100000,
     "dt": 0.03,
     } 
+
+test_dict = {
+    "R":np.ones(N),
+    "N":N,
+    "v_0":0.01,
+    "D":0.1,
+    "box_width":box_width_from_phi(N,0.6),
+    "T":100000,
+    "dt": 0.01,
+    }

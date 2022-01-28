@@ -60,11 +60,11 @@ def k_2_potential(pvec,R=1,k=1,k_2=2,epsilon = 0.1):
     x = dist/R_sum
     in_range1 = -k*x+k
     in_range2 = -k_2*x+k_2
-    in_range3 = k_2*x-k_2*(1+epsilon)
+    in_range3 = k_2*x-k_2*(1+2*epsilon)
     out_range = np.zeros(dist.shape)
     force = np.where(x<1,in_range1,in_range2)
-    force = np.where(x>1+epsilon/2,in_range3,force)
-    force = np.where(x>1+epsilon,out_range,force)
+    force = np.where(x>1+epsilon,in_range3,force)
+    force = np.where(x>1+2*epsilon,out_range,force)
     return force
 
 # def repulsion_cohesion_potential2(pvec,R=1,k=1,epsilon=0.15,delta=0.2):
