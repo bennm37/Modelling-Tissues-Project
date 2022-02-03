@@ -50,7 +50,7 @@ def repulsion_cohesion_potential2(pvec,R=1,k=1,epsilon = 0.15,delta=0.2):
     force = np.where(x>1+epsilon+delta,out_range,force)
     return force
 
-def k_2_potential(pvec,R=1,k=1,k_2=2,epsilon = 0.1):
+def k2_potential(pvec,R=1,k=1,k2=2,epsilon = 0.1):
     ##uses repulsion force k(2*R-r_ij) from active colloid paper
     ##this finds R_i +R_j for each i and j in 1,...N
     R_sum = np.sum(np.meshgrid(R,R),axis=0)
@@ -59,8 +59,8 @@ def k_2_potential(pvec,R=1,k=1,k_2=2,epsilon = 0.1):
     ## 2 radii 
     x = dist/R_sum
     in_range1 = -k*x+k
-    in_range2 = -k_2*x+k_2
-    in_range3 = k_2*x-k_2*(1+2*epsilon)
+    in_range2 = -k2*x+k2
+    in_range3 = k2*x-k2*(1+2*epsilon)
     out_range = np.zeros(dist.shape)
     force = np.where(x<1,in_range1,in_range2)
     force = np.where(x>1+epsilon,in_range3,force)

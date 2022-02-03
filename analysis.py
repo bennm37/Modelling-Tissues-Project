@@ -78,28 +78,27 @@ class Analysis(object):
             msd_data[i] = self.msd(m)
         return msd_data
     
-    def g_r(self,t):
+    def g_r(self,t,dr=0.1,csv = None):
         """Calculates the radial distribution function of the data at a
         given instant of time."""
         pdist = lag.norm(self.wrapped_pvec(t),axis=2)
         ##want to remove diagonal elements as these are resulting in lots of 0s 
-        print(np.sum(pdist<2))
         np.fill_diagonal(pdist,np.NaN)
-        print(np.sum(pdist<2))
         pdist = pdist[~np.isnan(pdist)].flatten()
-        print(np.sum(pdist<2))
-        # print(filter(lambda v:v==v,pdist))
-        # pdist = filter(lambda v:v==v,pdist).flatten()
-        unnormalised_density = gaussian_kde(pdist)
-        density = lambda x: unnormalised_density(x)/(2*np.pi*x)
-        x = np.linspace(0,self.box_width/2,100)
-        y = density(x)
-        fig,axs = plt.subplots(1,2)
-        print(pdist[pdist<1])
-        axs[0].set(xlim=(0,self.box_width/2))
-        axs[0].hist(pdist[pdist<self.box_width/2],bins=20)
-        axs[1].plot(x,y)
+        drs = np.arange(0,self.box_width*np.sqrt(2)/2+dr,dr)
+        freq = np.histogram(pdist,bins=drs)[0]
+        drs = np.round(drs[1:],2)
+        norm = self.box_width**2/(2*np.pi*drs*dr*self.N**2)
+        normalised_freq = freq*norm
+        if csv:
+            cols = ["r","g(r)"]
+            df = pd.DataFrame(np.array([drs,normalised_freq]).T,columns=cols)
+            df.to_csv(f"./data/g_r/{csv}",index=False)
+        ##PLOTTING
+        fig,ax = plt.subplots()
+        ax.plot(drs,normalised_freq)
         plt.show()
+        return drs,normalised_freq
 
     def plot_frame(self,frame_no):
         asp = [10,10,15]

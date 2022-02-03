@@ -115,7 +115,7 @@ class ABP():
         data = np.append(self.r,self.directions(),axis=1)
         data = np.append(data,self.rdot,axis=1)
         data_frame = pd.DataFrame(data,columns=columns)
-        data_frame.to_csv(f"./data/{folder_name}/data_0.csv")
+        data_frame.to_csv(f"./data/{folder_name}/data_0.csv",index=False)
         for i in range(1,num_samples):
             for j in range(sample_rate):
                 self.update(self.dt)

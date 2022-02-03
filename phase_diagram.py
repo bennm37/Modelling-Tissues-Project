@@ -19,7 +19,7 @@ ax3 = fig.add_subplot(gs[1,1])
 
 #titles 
 ax0.set(title = "Phase Diagram")
-ax1.set(title = "K_2 Force")
+ax1.set(title = "k2 Force")
 ax2.set(title = "Particles at 500000 time steps")
 ax3.set(title="Radial Distribution Function")
 ax2.axis("equal")
@@ -46,13 +46,13 @@ phase_diagram = pd.read_csv("data/phase_diagram.csv")
 ax0.pcolormesh(k2,epsilon,phase_diagram,shading="flat")
 
 ##initial subplots
-plot_potential(k_2_potential,[1,1,0.15],ax=ax1)
-def plot_particles(k_2,epsilon,frame_no,ax,p_dict = k_2_test_dict):
+plot_potential(k2_potential,[1,1,0.15],ax=ax1)
+def plot_particles(k2,epsilon,frame_no,ax,p_dict = k2_test_dict):
     ax.set(title = f"Particles at {frame_no}0000 dt")
     N = p_dict["N"]
-    folder_name = "./data/k_2_tests_halfepsilon/"
+    folder_name = "./data/k2_tests_halfepsilon/"
     try:
-        data = pd.read_csv(folder_name +f"k2_test_k_1_k_2_{k_2}_epsilon_{epsilon}/data_{frame_no}.csv")
+        data = pd.read_csv(folder_name +f"k2_test_k_1_k2_{k2}_epsilon_{epsilon}/data_{frame_no}.csv")
     except FileNotFoundError:
         ax.clear()
         return 1
@@ -85,7 +85,7 @@ def onclick(event):
     ax1.clear()
     ax2.clear()
     ax1.set(title = "K2 Force")
-    p1,nax1 = plot_potential(k_2_potential,[1,rounded_k2,rounded_epsilon],ax=ax1)
+    p1,nax1 = plot_potential(k2_potential,[1,rounded_k2,rounded_epsilon],ax=ax1)
     ret = plot_particles(rounded_k2,rounded_epsilon,50,ax2)
     if ret:
         fig.suptitle(f"No data for K2 = {rounded_k2},epsilon = {rounded_epsilon}")
