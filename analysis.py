@@ -4,6 +4,7 @@ import numpy.linalg as lag
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.patches import Polygon,Ellipse
+from matplotlib.tri import Triangulation
 import pandas as pd
 import os 
 from potentials import * 
@@ -20,7 +21,7 @@ class Analysis(object):
         self.p_dict = parameters
 
         if data_type == "ben":
-            filenames = [f"data_{i}" for i in range(self.n_saves)]
+            filenames = [f"data{i}" for i in range(self.n_saves)]
             frames = [pd.read_csv(f"{data_name}/{filename}.csv") for filename in filenames]
             df = pd.concat(frames)
             self.r_data = np.array(df[["x1","x2"]]).reshape(self.n_saves,self.N,2)
@@ -28,14 +29,16 @@ class Analysis(object):
             self.d_data = np.array(df[["d1","d2"]]).reshape(self.n_saves,self.N,2)
         
         if data_type == "pyABP":
+            ##TODO frame 0 not showing
             dat_content = [i.strip().split() for i in open(f"{data_name}/data0.dat")]
             columns = dat_content[0]
             data = np.zeros((self.n_saves,self.N,8))
-            for i in range(1,self.n_saves):
+            for i in range(0,self.n_saves):
                 dat_i = [i.strip().split() for i in open(f"{data_name}/data{i}.dat")]
                 data[i,:,:] = dat_i[1:]
             df = pd.DataFrame(data.reshape(self.N*self.n_saves,8),columns=columns)
             self.r_data = np.array(df[["x","y"]]).reshape(self.n_saves,self.N,2)
+            self.r_data += self.p_dict["box_width"]/2
             self.v_data = np.array(df[["vx","vy"]]).reshape(self.n_saves,self.N,2)
             self.theta_data = np.array(df["theta"]).reshape(self.n_saves,self.N,1)
             self.d_data = np.append(np.cos(self.theta_data),np.sin(self.theta_data),axis = 2)
@@ -97,8 +100,10 @@ class Analysis(object):
         ##PLOTTING
         fig,ax = plt.subplots()
         ax.plot(drs,normalised_freq)
-        plt.show()
-        return drs,normalised_freq
+        return drs,normalised_freq,ax
+    def d_triangulation(self,t):
+        S = self.r_data[t,:,:]
+        return Triangulation(S[:,0],S[:,1])
 
     def plot_frame(self,frame_no):
         asp = [10,10,15]
@@ -118,15 +123,15 @@ class Analysis(object):
         """Animates the movement of the active brownian particles using a 
         matplotlib quiver plot"""
         ##TODO sort arrow scaling
-        asp = [10,10,15] ##arrow shape parameters
+        asp = [5,5,None,5,0.00001] ##arrow shape parameters hal,hl,s,hw,ml
         r_data,direction_data,velocity_data = self.r_data,self.d_data,self.v_data
         fig,ax = plt.subplots()
         fig.set_size_inches(8,8)
         ax.set(xlim=(0,self.p_dict["box_width"]),ylim=(0,self.p_dict["box_width"]))
         directions = ax.quiver(r_data[0,:,0],r_data[0,:,1],direction_data[0,:,0],direction_data[0,:,1],
-            headaxislength=asp[0],headlength=asp[1],scale=asp[2])
+            headaxislength=asp[0],headlength=asp[1],scale=asp[2],headwidth=asp[3],minlength=asp[4])
         velocities = ax.quiver(r_data[0,:,0],r_data[0,:,1],velocity_data[0,:,0],velocity_data[0,:,1],color="r",
-            headaxislength=asp[0],headlength=asp[1],scale=asp[2])
+            headaxislength=asp[0],headlength=asp[1],scale=asp[2],headwidth=asp[3],minlength=asp[4])
         ##This creates circles with diameter 1, not radius 1
         for cell in r_data[0,:,:]:
             ## Fix to make sure ellipse is of radius R_i, not 1
@@ -138,9 +143,9 @@ class Analysis(object):
             ax.set(title=f"frame no {i}")
             ax.set(xlim=(0,self.p_dict["box_width"]),ylim=(0,self.p_dict["box_width"]))
             directions = ax.quiver(r_data[sample,:,0],r_data[sample,:,1],direction_data[sample,:,0],direction_data[sample,:,1],
-                headaxislength=asp[0],headlength=asp[1],scale=asp[2])
+                headaxislength=asp[0],headlength=asp[1],scale=asp[2],headwidth=asp[3],minlength=asp[4])
             velocities = ax.quiver(r_data[sample,:,0],r_data[sample,:,1],velocity_data[sample,:,0],velocity_data[sample,:,1],color="r",
-                headaxislength=asp[0],headlength=asp[1],scale=asp[2])
+                headaxislength=asp[0],headlength=asp[1],scale=asp[2],headwidth=asp[3],minlength=asp[4])
             for cell in r_data[sample,:,:]:
                 c = Ellipse(cell,2,2,fill=False,color="k")
                 p = ax.add_patch(c)

@@ -12,24 +12,18 @@ k2s = [0.4,0.8,1.2,1.6,2]
 epsilons = [0.05,0.1,0.15,0.2,0.25,0.3] 
 for k2 in k2s:
     for epsilon in epsilons:
-        folder_name = circle_test_setup(k2_potential,[1,k2,epsilon],k2_test_dict)
+        # folder_name = circle_test_setup(k2_potential,[1,k2,epsilon],k2_test_dict)
+        a = Analysis(f"./data/pyABP_k2_tests/pyABP_k2_{k2}_ep_{epsilon}",pyABP_dict,100,data_type="pyABP")
+        dr,nf,ax = a.g_r(50,csv=f"k2_{k2}_epsilon_{epsilon}")
 # circle_test_setup(potential = k2_potential,potential_parameters= [1,1,0.15],parameters = k2_test_dict)
 
-# def plot_cells(ax):
-#     start_radius = 10
-#     bw = box_width_from_phi(100,0.3)
-#     ax.set(xlim=(0,bw),ylim=(0,bw))
-#     np.random.seed(seed = 1915069)
-#     thetas = np.random.uniform(0,2*np.pi,N)
-#     radii = np.sqrt(np.random.uniform(0,start_radius**2,N))
-#     rs = np.transpose([radii*np.cos(thetas),radii*np.sin(thetas)])+np.full((N,2),bw/2)
-#     for cell in rs[:,:]:
-#         c = Ellipse(cell,2,2,fill=False,color="k")
-#         p = ax.add_patch(c)
-    
-# fig,ax = plt.subplots()
-# ax1 = plot_cells(ax)
-# plt.show()
+##TESTING PYABP CODE
+# folder_name = "pyABP_k2_1_ep_0.15"
+# a = Analysis(f"./data/{folder_name}",pyABP_dict,100,data_type="pyABP")
+# anim = a.animate_movement_patch(1)
+# anim.save(f"./media/{folder_name}.mp4")
+
+
 
 ##TESTING g(r) -radial distribution function 
 # epsilon = 0.05

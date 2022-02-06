@@ -5,7 +5,7 @@ from potentials import *
 
 ##plotting_potentials
 def plot_potential(potential,parameters,ax=None):
-    num_samples = 50
+    num_samples = 150
     R = np.ones(1)
     data = np.zeros((num_samples))
     X = np.linspace(0,5,num_samples)
