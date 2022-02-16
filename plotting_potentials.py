@@ -8,7 +8,7 @@ def plot_potential(potential,parameters,ax=None):
     num_samples = 150
     R = np.ones(1)
     data = np.zeros((num_samples))
-    X = np.linspace(0,5,num_samples)
+    X = np.linspace(0,4,num_samples)
     for i,x in enumerate(X):
         pvec = np.array([[[x,0]]])
         ##TODO change potentials to take in one parameters arg not individual
@@ -17,7 +17,7 @@ def plot_potential(potential,parameters,ax=None):
     if not ax:
         fig,ax = plt.subplots()
         
-    ax.set(ylim=(-2,3))
+    ax.set(ylim=(-1,1))
     p = ax.plot(X,data)
     return p,ax
 

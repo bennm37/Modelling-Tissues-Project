@@ -21,7 +21,7 @@ class Analysis(object):
         self.p_dict = parameters
 
         if data_type == "ben":
-            filenames = [f"data{i}" for i in range(self.n_saves)]
+            filenames = [f"data_{i}" for i in range(self.n_saves)]
             frames = [pd.read_csv(f"{data_name}/{filename}.csv") for filename in filenames]
             df = pd.concat(frames)
             self.r_data = np.array(df[["x1","x2"]]).reshape(self.n_saves,self.N,2)
@@ -101,9 +101,20 @@ class Analysis(object):
         fig,ax = plt.subplots()
         ax.plot(drs,normalised_freq)
         return drs,normalised_freq,ax
+
+
+    ##COMUTATIONAL GEOMETRY ALGOS
     def d_triangulation(self,t):
+        """Finds the delauny triangulation of the cells 
+        at time t."""
         S = self.r_data[t,:,:]
         return Triangulation(S[:,0],S[:,1])
+    
+    def convex_hull(self,t):
+        """Finds the convex hull of the points at time t
+        using the gift wrapping algorithm."""
+        pass
+
 
     def plot_frame(self,frame_no):
         asp = [10,10,15]
