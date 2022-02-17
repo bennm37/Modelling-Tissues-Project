@@ -3,3 +3,4 @@ media/
 *.ipynb
 *.pyc
 __pycache__/
+.vscode

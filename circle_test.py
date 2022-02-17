@@ -30,7 +30,7 @@ def circle_test_setup(potential,potential_parameters,parameters):
     folder_name = f"k2_test_k_{k}_k2_{k2}_epsilon_{epsilon}"
     particles.generate_csv(100,folder_name)
 
-    a = Analysis("data/" +folder_name,parameters,parameters["T"]//100)
+    a = Analysis("data/" +folder_name,parameters,range(parameters["T"]//100))
     anim =  a.animate_movement_patch()
     anim.save(f"media/{folder_name}.mp4")
     return folder_name
@@ -95,5 +95,5 @@ def circle_test_slider(potential,slider_names,slider_ranges=None,slider_init=Non
         plt.show()
 
 # circle_test_slider(parabola_potential,["k","epsilon","l"],slider_init=[1,0.15,-1],slider_ranges=[(0,3),(0,1),(-5,0)])
-# circle_test_setup(k2_potential,[1,2,0.15])
+# # circle_test_setup(k2_potential,[1,2,0.15])
 # plt.show()

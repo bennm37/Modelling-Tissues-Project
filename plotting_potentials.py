@@ -15,8 +15,7 @@ def plot_potential(potential,parameters,ax=None):
         k,k2,epsilon = parameters
         data[i] = potential(pvec,R,k,k2,epsilon)[0,0]
     if not ax:
-        fig,ax = plt.subplots()
-        
+        fig,ax = plt.subplots() 
     ax.set(ylim=(-1,1))
     p = ax.plot(X,data)
     return p,ax

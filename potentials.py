@@ -1,9 +1,9 @@
 import numpy as np
 from numpy.lib.function_base import kaiser 
 import numpy.linalg as lag 
+##TODO all potentials take in param1 param2 param3 to make things more general
 
-
-def short_sacle_repulsion(pvec,R=1,k=1):
+def short_scale_repulsion(pvec,R=1,k=1):
     ##uses repulsion force k(2*R-r_ij) from active colloid paper
     ##this finds R_i +R_j for each i and j in 1,...N
     R_sum = np.sum(np.meshgrid(R,R),axis=0)
@@ -89,5 +89,5 @@ def parabola_potential(pvec,R,k=1,epsilon=0.5,l=-0.5):
     in_range = a*x**2+b*x+c
     out_range = np.zeros(dist.shape)
     force = np.where(x<1+epsilon,in_range,out_range)
-    return -force
+    return force
 

@@ -1,6 +1,4 @@
-# from warnings import simplefilter
 import numpy as np
-# from numpy.lib.function_base import select 
 import numpy.linalg as lag
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -126,7 +124,9 @@ class ABP():
         return folder_name
     
 class ABP_strip(ABP):
-    """Derived class to consider rectangular boxes and create"""#
+    ##TODO probably neater just to have different initialisation 
+    ## and equilibration methods in abp?
+    """Derived class to consider rectangular boxes and create"""
     def __init__(self,parameters,potential,rect_dim):
         super().__init__(parameters,potential)
         self.rect_dim = rect_dim

@@ -4,7 +4,6 @@ from matplotlib.pyplot import plot
 from abp import * 
 from analysis import Analysis
 from parameter_dictionaries import box_width_from_phi,k2_test_dict,pyABP_dict
-##TODO why does this work in IDLE but not in vsc
 import pickle
 
 ##SETUP
@@ -66,10 +65,6 @@ def plot_alpha_shape(k2,epsilon,frame_no,ax,data_type="ben",r_data=None):
         for p in ps:
             ax.add_patch(p)
 
-#%% 
-import matplotlib.pyplot as plt
-fig,ax = plt.subplots()
-ax.scatter(1,1)
 # fig,ax = plt.subplots()
 # plot_alpha_shape(0.4,0.05,50,ax,"pyABP")
 # plt.show()

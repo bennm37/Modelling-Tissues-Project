@@ -46,18 +46,11 @@ def plot_particles(k2,epsilon,frame_no,ax,p_dict = k2_test_dict,data_type= "ben"
     return 0,r_data
 
 
-def plot_g_r(k2,epsilon,frame_no,ax,data_type="ben"):
-    try:
-        if data_type =="ben":
-            df = pd.read_csv(f"./data/g_r/N100_k2_centretests/k2_{k2}_epsilon_{epsilon}")
-        if data_type == "pyABP":
-            df = pd.read_csv(f"./data/g_r/pyABP_k2/k2_{k2}_epsilon_{epsilon}")
-        r = df["r"]
-        g_r = df["g(r)"]
-        ax.set(xlim=(0,6))
-        ax.plot(r,g_r)
-        ax.set(title = "Radial Distribution Function")
-        return 0
-    except FileNotFoundError:
-        ax.set(title = f"No Data for k2 = {k2},ep ={epsilon}")
-        return 0
+def plot_g_r(a,k2,epsilon,ax,data_type="ben"):
+    if data_type == "ben":
+        folder_name = f"./data/g_r/N100_k2_centretests"
+        file_name = f"k2_{k2}_epsilon_{epsilon}"
+    if data_type == "pyABP":
+        folder_name = f"./data/g_r/pyABP_k2"
+        file_name = f"k2_{k2}_epsilon_{epsilon}"
+    a.plot_g_r(ax,folder_name,file_name)
