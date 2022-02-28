@@ -9,7 +9,7 @@ from potentials import *
 
 class ABP():
     ##TODO add **kwargs ? 
-    def __init__(self,parameters,potential):
+    def __init__(self,parameters,potential,type="rbox"):
         "N,v_0=0.1,box_width=10,dim=2,D=0.5,R=1,k=1,potential=short_scale_repulsion"
         """Creates N Active Brownian Particles with uniformly random
         initial positions and directions unless specified. V_0 is the 
@@ -29,10 +29,25 @@ class ABP():
         self.T = parameters["T"]
         self.dt = parameters["dt"]
         self.psi = potential
-        self.r = np.random.uniform(0,self.box_width,(self.N,self.dim)) 
+        self.initalise(type)
         self.thetas = np.random.uniform(0,2*np.pi,self.N)
         self.rdot = self.v_0*self.directions()+np.sum(self.interaction_forces(),axis=1)
-
+    
+    def initalise(self,type):
+        if type == "rbox":
+            self.r = np.random.uniform(0,self.box_width,(self.N,self.dim))
+        if type == "rcircle":
+            radius = np.sqrt(self.N)
+            np.random.seed(seed = 1915069)
+            thetas = np.random.uniform(0,2*np.pi,self.N)
+            radii = np.sqrt(np.random.uniform(0,radius**2,self.N))
+            self.r = np.transpose([radii*np.cos(thetas),radii*np.sin(thetas)])+np.full((self.N,2),self.box_width/2)
+        ##TODO add types ubox,ucircle, rstrip,ustrip
+    
+    def equilibrate(self,et):
+        """Updataes for et time steps"""
+        pass
+    
     def update(self,dt):
         self.rdot = self.v_0*self.directions()+np.sum(self.interaction_forces(),axis=1)
         theta_dot = np.random.normal(0,self.D,self.thetas.shape) 
@@ -107,7 +122,10 @@ class ABP():
             folder_name = folder_name
         else:
             folder_name = "abp_data__"+self.get_parameter_suffix()
-        os.mkdir(f"./data/{folder_name}")
+        try:   
+            os.mkdir(f"./data/{folder_name}")
+        except FileExistsError:
+            print("Using prexisting file.")
         num_samples = int(np.floor(self.T//sample_rate))
         columns = ["x1","x2","d1","d2","v1","v2"]
         data = np.append(self.r,self.directions(),axis=1)
@@ -122,6 +140,7 @@ class ABP():
             data_frame = pd.DataFrame(data,columns=columns)
             data_frame.to_csv(f"./data/{folder_name}/data_{i}.csv")
         return folder_name
+    
     
 class ABP_strip(ABP):
     ##TODO probably neater just to have different initialisation 

@@ -1,29 +1,39 @@
-from cv2 import circle
 from abp import * 
 from analysis import *
-from circle_test import circle_test, circle_test_setup
-from potentials import k2_potential
 ##TODO find better way of importing to avoid cluttering namespace
 from parameter_dictionaries import *
-from phase_diagram_functions import plot_particles,plot_g_r
+from simulation import *
+import os
 
-parameters = pyABP_dict
-k,k2,epsilon = 1,0.8,0.05
-# folder_name = f"pyABP_k2_tests/pyABP_k2_{k2}_epsilon_{epsilon}"
-folder_name = f"pyABP_k2_tests/pyABP_k2_{k2}_ep_{epsilon}"
-n_saves = parameters["T"]//100
-save_range = range(90,91)
-a = Analysis("data/" +folder_name,parameters,save_range,data_type="pyABP")
-as_folder_name = f"./data/alpha_shapes/pyABP_k2_tests/k2_{k2}_ep_{epsilon}"
-frame_no = 90
 
-##PLOTTING
-fig,axs = plt.subplots(2,2)
-a.plot_particles(axs[0,0],0)
-a.plot_potential(axs[0,1],parabola_potential,[1,0.15,-0.5])
-plot_g_r(a,2,0.15,axs[1,0])
-a.plot_alphashape(axs[1,1],as_folder_name,frame_no,True)
-plt.show()
+n_delta,n_ep = 6,6
+delta_range,ep_range  = (0,0.6),(0.05,0.35)
+epsilon,delta = make_param_lists(ep_range,delta_range,n_ep,n_delta)
+sg = make_search_grid(["epsilon","delta"],[epsilon,delta],True)
+# simulation("delta_tests",delta_test_dict,repulsion_cohesion_potential2,sg)
+# delete_project("pyABP_delta_tests")
+while not os.listdir("data/pyABP_delta_tests/k_1_epsilon_0.25_delta_0.5/rvd_data"):
+    pass
+simulation("pyABP_delta_tests",pyABP_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=["g(r)","anim"])
+
+##TESTING NEW PLOTTING
+# parameters = pyABP_dict
+# k,k2,epsilon = 1,0.8,0.05
+# # folder_name = f"pyABP_k2_tests/pyABP_k2_{k2}_epsilon_{epsilon}"
+# folder_name = f"pyABP_k2_tests/pyABP_k2_{k2}_ep_{epsilon}"
+# n_saves = parameters["T"]//100
+# save_range = range(90,91)
+# a = Analysis("data/" +folder_name,parameters,save_range,data_type="pyABP")
+# as_folder_name = f"./data/alpha_shapes/pyABP_k2_tests/k2_{k2}_ep_{epsilon}"
+# frame_no = 90
+
+# ##PLOTTING
+# fig,axs = plt.subplots(2,2)
+# a.plot_particles(axs[0,0],0)
+# a.plot_potential(axs[0,1],parabola_potential,[1,0.15,-0.5])
+# plot_g_r(a,2,0.15,axs[1,0])
+# a.plot_alphashape(axs[1,1],as_folder_name,frame_no,True)
+# plt.show()
 
 ##CENTRE TEST PACKING FRACTION 1
 # k2s = [0.4,0.8,1.2,1.6,2]
@@ -51,3 +61,5 @@ plt.show()
 # drs,nf = a.g_r(999,dr=0.01,csv="k2_1_epsilon_0.15")
 
 
+# "data/delta_tests/k_1_epsilon_0.05_delta_0.4/rvd_data"
+# "data/delta_tests/k_1_epsilon_0.05_delta_0.4/rvd_data"

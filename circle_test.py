@@ -4,8 +4,11 @@ from parameter_dictionaries import *
 from potentials import *
 from matplotlib.widgets import Slider,RadioButtons
 
-def circle_test_setup(potential,potential_parameters,parameters):
-    ##SETUP 
+
+##TODO obsolete?
+def circle_test_rvd(potential,potential_parameters,parameters,folder_name):
+    ##SETUP
+    ##TODO make this an initialise method in abp  
     N = parameters["N"]
     bw = parameters["box_width"]
     start_radius = np.sqrt(N)
@@ -20,14 +23,8 @@ def circle_test_setup(potential,potential_parameters,parameters):
     k,k2,epsilon = potential_parameters
     def psi(pvec,R):
         return potential(pvec,R,k,k2,epsilon)
-    if False:
-        fig,ax = plt.subplots()
-        ax.axis("equal")
-        ax.scatter(rs[0],rs[1])
-        print(psi([[[1,1]]],[1]))
     particles = ABP(parameters,psi)
     particles.r = rs
-    folder_name = f"k2_test_k_{k}_k2_{k2}_epsilon_{epsilon}"
     particles.generate_csv(100,folder_name)
 
     a = Analysis("data/" +folder_name,parameters,range(parameters["T"]//100))

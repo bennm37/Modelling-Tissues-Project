@@ -23,6 +23,7 @@ class Analysis(object):
         self.dt = parameters["dt"]
         self.box_width = parameters["box_width"]
         self.p_dict = parameters
+        self.dn = data_name
         self.load_data(data_name)
 
     ##LOADING CANNED DATA 
@@ -30,7 +31,7 @@ class Analysis(object):
         try:    
             if self.data_type == "ben":
                 filenames = [f"data_{i}" for i in self.save_range]
-                frames = [pd.read_csv(f"{data_name}/{filename}.csv") for filename in filenames]
+                frames = [pd.read_csv(f"{data_name}/rvd_data/{filename}.csv") for filename in filenames]
                 df = pd.concat(frames)
                 self.r_data = np.array(df[["x1","x2"]]).reshape(self.n_saves,self.N,2)
                 self.v_data = np.array(df[["v1","v2"]]).reshape(self.n_saves,self.N,2)
@@ -38,11 +39,12 @@ class Analysis(object):
             
             if self.data_type == "pyABP":
                 ##TODO frame 0 not showing
-                dat_content = [i.strip().split() for i in open(f"{data_name}/data0.dat")]
+                ##TODO take rvd data out of here and put it in simulation
+                dat_content = [i.strip().split() for i in open(f"{data_name}/rvd_data/data0.dat")]
                 columns = dat_content[0]
                 data = np.zeros((self.n_saves,self.N,8))
                 for i,index in enumerate(self.save_range):
-                    dat_i = [j.strip().split() for j in open(f"{data_name}/data{index}.dat")]
+                    dat_i = [j.strip().split() for j in open(f"{data_name}/rvd_data/data{index}.dat")]
                     data[i,:,:] = dat_i[1:]
                 df = pd.DataFrame(data.reshape(self.N*self.n_saves,8),columns=columns)
                 self.r_data = np.array(df[["x","y"]]).reshape(self.n_saves,self.N,2)
@@ -57,7 +59,9 @@ class Analysis(object):
             self.v_data = np.zeros((self.n_saves,self.N,2))
             self.d_data = np.zeros((self.n_saves,self.N,2))
 
-    def load_alphashape(self,folder_name,frame_no):
+    def load_alphashape(self,frame_no,folder_name=None):
+        if not folder_name:
+            folder_name = f"{self.dn}/alpha_shapes"
         try:
             if self.data_type == "ben":
                 ##UNPICKLING
@@ -69,18 +73,6 @@ class Analysis(object):
         except FileNotFoundError:
             print(f"couldn't find file for {folder_name}, as_{frame_no}.p")
             return None
-
-    def load_g_r(self,ax,folder_name,file_name):
-        try:
-            # df = pd.read_csv(f"./data/g_r/N100_k2_centretests/k2_{k2}_epsilon_{epsilon}")
-            df = pd.read_csv(f"{folder_name}/{file_name}")
-            r = df["r"]
-            g_r = df["g(r)"]
-            ax.set(xlim=(0,6))
-            ax.plot(r,g_r)
-            ax.set(title = "Radial Distribution Function")
-        except FileNotFoundError:
-            ax.set(title = f"No Data for current selection.")
 
     ##SUMMARY STATISTICS  
     def analytic_msd(self,num_time_steps):
@@ -95,7 +87,7 @@ class Analysis(object):
         msd = np.sum(i_sum)/(self.n_saves-m)
         return msd
     
-    def generate_msd_data(self):
+    def generate_msd_data(self,csv = None):
         """Calculates the msd for every time scale m."""
         m_range = np.linspace(0,self.n_saves,self.n_saves,dtype=int)
         msd_data = np.zeros(m_range.shape)
@@ -103,8 +95,24 @@ class Analysis(object):
             if self.msd(m)==np.nan:
                 print(m)
             msd_data[i] = self.msd(m)
+        if csv:
+            cols = ["m","msd"]
+            df = pd.DataFrame(np.array([m,msd_data]).T,columns=cols)
+            df.to_csv(f"./data/{csv}",index=False)
         return msd_data
-    
+
+    def msv(self,csv = None):
+        """Calculates the mean squared velocities for all times."""
+        msv_data = np.zeros(self.n_saves)
+        t = [s for s in self.save_range]
+        for i in range(self.n_saves):
+            msv_data[i] = np.sum(self.v_data[i,:,:]**2)/self.N
+        if csv:
+            cols = ["t","msv"]
+            df = pd.DataFrame(np.array([t,msv_data]).T,columns=cols)
+            df.to_csv(f"./data/{csv}",index=False)
+        return msv_data
+
     def g_r(self,t,dr=0.1,csv = None):
         """Calculates the radial distribution function of the data at a
         given instant of time."""
@@ -120,11 +128,8 @@ class Analysis(object):
         if csv:
             cols = ["r","g(r)"]
             df = pd.DataFrame(np.array([drs,normalised_freq]).T,columns=cols)
-            df.to_csv(f"./data/g_r/{csv}",index=False)
-        ##PLOTTING
-        fig,ax = plt.subplots()
-        ax.plot(drs,normalised_freq)
-        return drs,normalised_freq,ax
+            df.to_csv(f"{csv}/g(r)_{t}.csv",index=False)
+        return drs,normalised_freq
 
     def generate_g_r_data(self):
         pass
@@ -148,7 +153,7 @@ class Analysis(object):
 
     def d_triangulation(self,t):
         """Finds the delauny triangulation of the cells 
-        at time t."""
+        at time t."""   
         S = self.r_data[t,:,:]
         return Triangulation(S[:,0],S[:,1])
     
@@ -199,10 +204,12 @@ class Analysis(object):
             self.plot_alpha_shape(ax,folder_name,frame_no)
         anim = animation.FuncAnimation(fig,update,frames =100,interval=30)
 
-    def plot_g_r(self,ax,folder_name,file_name):
+    def plot_g_r(self,ax,frame_no,folder_name=None):
+        if not folder_name:
+            folder_name = f"{self.dn}/g(r)"
         try:
             # df = pd.read_csv(f"./data/g_r/N100_k2_centretests/k2_{k2}_epsilon_{epsilon}")
-            df = pd.read_csv(f"{folder_name}/{file_name}")
+            df = pd.read_csv(f"{folder_name}/g(r)_{frame_no}.csv")
             r = df["r"]
             g_r = df["g(r)"]
             ax.set(xlim=(0,6))
@@ -219,16 +226,15 @@ class Analysis(object):
         for i,x in enumerate(X):
             pvec = np.array([[[x,0]]])
             ##TODO change potentials to take in one parameters arg not individual
-            k,k2,epsilon = potential_parameters
-            data[i] = potential(pvec,R,k,k2,epsilon)[0,0]
+            data[i] = potential(pvec,R,potential_parameters)[0,0]
         if not ax:
             fig,ax = plt.subplots() 
         ax.set(ylim=(-1,1))
         p = ax.plot(X,data)
         return p,ax
 
-    def plot_alphashape(self,ax,folder_name,frame_no,single=False):
-        verticies = self.load_alphashape(folder_name,frame_no)
+    def plot_alphashape(self,ax,frame_no,folder_name=None,single=False):
+        verticies = self.load_alphashape(frame_no,folder_name)
         ps = [Polygon(v, fill = False,edgecolor="k") for v in verticies]
         ax.axis("equal")
         ax.set(xlim=(0,self.box_width),ylim=(0,self.box_width))

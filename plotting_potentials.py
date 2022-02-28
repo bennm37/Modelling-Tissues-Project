@@ -4,22 +4,6 @@ from matplotlib.widgets import Slider
 from potentials import *
 
 ##plotting_potentials
-def plot_potential(potential,parameters,ax=None):
-    num_samples = 150
-    R = np.ones(1)
-    data = np.zeros((num_samples))
-    X = np.linspace(0,4,num_samples)
-    for i,x in enumerate(X):
-        pvec = np.array([[[x,0]]])
-        ##TODO change potentials to take in one parameters arg not individual
-        k,k2,epsilon = parameters
-        data[i] = potential(pvec,R,k,k2,epsilon)[0,0]
-    if not ax:
-        fig,ax = plt.subplots() 
-    ax.set(ylim=(-1,1))
-    p = ax.plot(X,data)
-    return p,ax
-
 def parameter_potential_plot(potential,slider_names,slider_ranges=None,slider_init=None):
         n_sliders = len(slider_names)
         if not slider_ranges:
