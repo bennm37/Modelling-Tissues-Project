@@ -44,7 +44,7 @@ def repulsion_cohesion_potential2(pvec,R=1,potential_parameters=[1,0.15,0.2]):
     x = dist/R_sum
     in_range1 = -k*x+k
     in_range2 = -k*(epsilon)
-    in_range3 = k*x-k*(1+epsilon+delta)
+    in_range3 = k*x-k*(1+2*epsilon+delta)
     out_range = np.zeros(dist.shape)
     force = np.where(x<1+epsilon,in_range1,in_range2)
     force = np.where(x>1+epsilon+delta,in_range3,force)

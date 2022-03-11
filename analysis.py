@@ -5,8 +5,9 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from matplotlib.patches import Polygon,Ellipse
 from matplotlib.tri import Triangulation
+from matplotlib.widgets import Slider
+# from shapely.geometry import Polygon
 import pandas as pd
-import os 
 from potentials import * 
 import pickle
 
@@ -24,10 +25,11 @@ class Analysis(object):
         self.box_width = parameters["box_width"]
         self.p_dict = parameters
         self.dn = data_name
-        self.load_data(data_name)
+        self.load_data()
 
     ##LOADING CANNED DATA 
-    def load_data(self,data_name):
+    def load_data(self):
+        data_name = self.dn
         try:    
             if self.data_type == "ben":
                 filenames = [f"data_{i}" for i in self.save_range]
@@ -68,12 +70,23 @@ class Analysis(object):
                 verticies = pickle.load(open(f"{folder_name}/as_{frame_no}.p","rb"))
                 return verticies
             if self.data_type == "pyABP":
-                    verticies = pickle.load(open(f"{folder_name}/as_{frame_no}.p","rb"))
-                    return [v+self.box_width/2 for v in verticies]
+                verticies = pickle.load(open(f"{folder_name}/as_{frame_no}.p","rb"))
+                return [v+self.box_width/2 for v in verticies]
         except FileNotFoundError:
             print(f"couldn't find file for {folder_name}, as_{frame_no}.p")
             return None
 
+    def load_alphalengths(self,folder_name=None):
+        lengths = [pickle.load(open(f"{folder_name}"))]
+        if not folder_name:
+            folder_name = f"{self.dn}/alpha_shapes"
+        try:
+            ##UNPICKLING
+            lengths = [pickle.load(open(f"{folder_name}/al_{frame_no}.p","rb")) for frame_no in self.save_range]
+            return lengths
+        except FileNotFoundError:
+            print(f"couldn't find all the lengths for {folder_name} in save range. ")
+            return None
     ##SUMMARY STATISTICS  
     def analytic_msd(self,num_time_steps):
         tau_r =1 #what is persistence time?
@@ -229,13 +242,55 @@ class Analysis(object):
             data[i] = potential(pvec,R,potential_parameters)[0,0]
         if not ax:
             fig,ax = plt.subplots() 
-        ax.set(ylim=(-1,1))
+        ax.set(ylim=(-0.5,1.2))
         p = ax.plot(X,data)
         return p,ax
 
+    def parameter_potential_plot(self,potential,slider_names,slider_ranges=None,slider_init=None):
+        n_sliders = len(slider_names)
+        if not slider_ranges:
+            slider_ranges = [[0,2] for i in range(n_sliders)]
+        if not slider_init:
+            slider_init = [1 for i in range(n_sliders)]
+        # Create the figure and the vf that we will manipulate
+
+        parameters = slider_init
+        fig,ax = plt.subplots()
+        # ax.set(xlim=(0,4),ylim=(-2,2))
+        p,ax = self.plot_potential(ax,potential,parameters)
+        # adjust the main plot to make room for the sliders
+        plt.subplots_adjust(bottom=0.1*n_sliders)
+
+        # Make a horizontal slider to control alpha
+        slider_ax = [None for i in range(n_sliders)]
+        sliders = [None for i in range(n_sliders)]
+        for i,name in enumerate(slider_names):
+            slider_ax[i] = plt.axes([0.25, 0.1+0.05*i, 0.5, 0.03])
+            sliders[i] = Slider(
+                slider_ax[i],
+                label = name,
+                valmin=slider_ranges[i][0],
+                valmax=slider_ranges[i][1],
+                valinit = slider_init[i])
+
+        def update(val):
+            parameters = [s.val for s in sliders]
+            ax.clear()
+            p,ax1 = self.plot_potential(ax,potential,parameters)
+
+        # register the update function with each slider
+        for s in sliders:
+            s.on_changed(update)
+        ##NOTE if creating sliders in a function, return them ! Otherwise they freeze (weak refs) 
+        return sliders
+
     def plot_alphashape(self,ax,frame_no,folder_name=None,single=False):
         verticies = self.load_alphashape(frame_no,folder_name)
-        ps = [Polygon(v, fill = False,edgecolor="k") for v in verticies]
+        try:
+            ps = [Polygon(v, fill = False,edgecolor="k") for v in verticies]
+        except TypeError:
+            ax.set(title= "No alphashape data.")
+            return -1           
         ax.axis("equal")
         ax.set(xlim=(0,self.box_width),ylim=(0,self.box_width))
         if not single:
@@ -244,6 +299,13 @@ class Analysis(object):
             ax.scatter(self.r_data[0,:,0],self.r_data[0,:,1],s=2)
         for p in ps:
             ax.add_patch(p)
+
+    def plot_alpha_length(self,ax):
+        lengths = self.load_alphalengths()
+        print(lengths)
+        # length_sum = [sum(l) for l in lengths]
+        # t = 1
+        # ax.plot(t,length_sum)
 
     def plot_particles(self,ax,frame_no):
         asp = [15,15,2,7.5,1]

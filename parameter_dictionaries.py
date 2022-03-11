@@ -37,6 +37,17 @@ normal_liquid_dict = {
     "box_width":box_width_from_phi(N,0.6)
     } 
 
+pyABP_delta_dict = {
+    "R":np.ones(N),
+    "N":2000,
+    "v_0":0.1,
+    "D":0.1,
+    "k":1,
+    "box_width":200,
+    "T":500000,
+    "dt": 0.01,
+    } 
+
 pyABP_dict = {
     "R":np.ones(N),
     "N":2000,

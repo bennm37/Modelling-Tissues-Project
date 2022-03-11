@@ -5,16 +5,21 @@ from parameter_dictionaries import *
 from simulation import *
 import os
 
-
-n_delta,n_ep = 6,6
+# n_delta,n_ep = 6,6
+# delta_range,ep_range  = (0,0.6),(0.05,0.35)
+n_delta,n_ep = 6,7
 delta_range,ep_range  = (0,0.6),(0.05,0.35)
 epsilon,delta = make_param_lists(ep_range,delta_range,n_ep,n_delta)
 sg = make_search_grid(["epsilon","delta"],[epsilon,delta],True)
 # simulation("delta_tests",delta_test_dict,repulsion_cohesion_potential2,sg)
 # delete_project("pyABP_delta_tests")
-while not os.listdir("data/pyABP_delta_tests/k_1_epsilon_0.25_delta_0.5/rvd_data"):
-    pass
-simulation("pyABP_delta_tests",pyABP_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=["g(r)","anim"])
+# while not os.listdir("data/pyABP_delta_tests/k_1_epsilon_0.25_delta_0.5/rvd_data"):
+#     pass
+# simulation("pyABP_delta_tests",pyABP_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=["g(r)","anim"])
+pyABP_dict["T"] = 500000
+pyABP_dict["box_width"] = 200
+delete_project("pyABP_delta_tests")
+simulation("pyABP_delta_tests",pyABP_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=[])
 
 ##TESTING NEW PLOTTING
 # parameters = pyABP_dict

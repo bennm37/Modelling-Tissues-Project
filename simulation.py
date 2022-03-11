@@ -83,7 +83,7 @@ def generate_analyse(potential,parameters,folder_name,data_type,stats=["rvd","g(
     a = Analysis(f"data/{folder_name}",parameters,range(parameters["T"]//1000),data_type)
     if "anim" in stats or "all" in stats:
         print("Starting anim")
-        anim =  a.animate_movement_patch(sample_rate=2)
+        anim =  a.animate_movement_patch(sample_rate=1)
         anim.save(f"media/{folder_name}/rvd.mp4")
     if "g(r)" in stats or "all" in stats:
         print("Starting g(r)")
@@ -94,6 +94,6 @@ def generate_analyse(potential,parameters,folder_name,data_type,stats=["rvd","g(
         a.generate_msd_data(csv=f"data/{folder_name}/msd")
 
 def make_param_lists(p1_range,p2_range,n1,n2):
-    p1 = np.linspace(p1_range[0],p1_range[1],n1+1)
-    p2 = np.linspace(p2_range[0],p2_range[1],n2+1)
+    p1 = np.linspace(p1_range[0],p1_range[1],n1,endpoint=True)
+    p2 = np.linspace(p2_range[0],p2_range[1],n2,endpoint=True)
     return p1,p2

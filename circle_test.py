@@ -55,7 +55,6 @@ def circle_test(potential,potential_parameters,parameters=test_dict,data_point=1
         p = ax.add_patch(c)
     return p,ax
 
-
 def circle_test_slider(potential,slider_names,slider_ranges=None,slider_init=None):
         n_sliders = len(slider_names)
         if not slider_ranges:
