@@ -1,3 +1,4 @@
+from imports import *
 from abp import *
 from analysis import *
 from parameter_dictionaries import *
@@ -6,8 +7,9 @@ from matplotlib.gridspec import GridSpec
 from simulation import get_parameter_suffix,make_param_lists
 
 
-data_type = "ben"
-project_name = "delta_tests"
+data_type = "pyABP"
+project_name = "pyABP_delta_tests"
+p_dict = pyABP_delta_dict
 frame_no = 99
 
 ##setting up figure/axes
@@ -25,16 +27,18 @@ ax4 = fig.add_subplot(gs[0:2,2:4])
 ax0.set(title = "Phase Diagram")
 ax1.set(title = "k2 Force")
 ax2.set(title = "Alpha Shape of Particles")
-ax4.set(title = f"Particles at {frame_no}000 time steps")
 ax3.set(title="Radial Distribution Function")
+ax4.set(title = f"Particles at {frame_no}000 time steps")
 ax2.axis("equal")
 ax4.axis("equal")
 ##setting up phase diagram
 
 n_k2,n_ep = 6,7
-k2_range,ep_range  = (0,0.6),(0,0.35)
-k2_int,ep_int = (k2_range[1]-k2_range[0])/(n_k2),(ep_range[1]-ep_range[0])/(n_ep)
+k2_range,ep_range  = (0,0.6),(0.05,0.35)
+k2_int,ep_int = (k2_range[1]-k2_range[0])/(n_k2-1),(ep_range[1]-ep_range[0])/(n_ep-1)
+print(k2_int)
 epsilon,k2 = make_param_lists(ep_range,k2_range,n_ep,n_k2)
+K,E = np.meshgrid(k2,epsilon)
 ax0.set_xticks(k2)
 ax0.set_yticks(epsilon)
 ax0.grid(which="both")
@@ -45,20 +49,19 @@ phases = np.linspace(0,5,6)
 # cols = [f"col{i}" for i in range(n_k2+1)]
 # df = pd.DataFrame(phase_diagram,columns=cols)
 # df.to_csv("data/phase_diagram.csv",index=False)
-phase_diagram = pd.read_csv(f"data/{project_name}/phase_diagram.csv")
-ax0.pcolormesh(k2,epsilon,phase_diagram,shading="flat")
+phase_diagram = np.array(pd.read_csv(f"data/{project_name}/phase_diagram.csv"))
+ax0.pcolormesh(K,E,phase_diagram,shading="auto")
 
 ##initial subplots
-p_dict = delta_test_dict
-k2_init = 0.4
-ep_init = 0.1
+k2_init = 0.0
+ep_init = 0.05
 potential_dict = {"k":1,"epsilon":ep_init,"delta":k2_init}
 data_name = f"data/{project_name}/{get_parameter_suffix(potential_dict)}"
 save_range = range(frame_no,frame_no+1)
 a = Analysis(data_name,p_dict,save_range,data_type=data_type)
 a.plot_potential(ax1,k2_potential,[1,k2_init,ep_init])
-a.plot_g_r(ax2,1)
-# a.plot_alphashape(ax=ax3,frame_no=frame_no,single = True)
+# a.plot_alphashape(ax=ax2,frame_no=frame_no,single = True)
+a.plot_g_r(ax3,1)
 a.plot_particles(ax4,0)
 def onclick(event):
     epsilon = event.ydata
@@ -93,8 +96,8 @@ def onclick(event):
         print(save_range)
         a = Analysis(data_name,p_dict,save_range,data_type=data_type)
         a.plot_potential(ax1,repulsion_cohesion_potential2,[1,rounded_k2,rounded_epsilon])
-        a.plot_g_r(ax2,1)
-        # a.plot_alphashape(ax=ax3,frame_no=frame_no,single = True)
+        a.plot_alphashape(ax=ax2,frame_no=frame_no,single = True)
+        a.plot_g_r(ax3,1)
         ax4.set(title = f"Particles at {frame_no}000 time steps")
         a.plot_particles(ax4,0)
         fig.suptitle(f"K2 = {rounded_k2}, Epsilon = {rounded_epsilon}")
