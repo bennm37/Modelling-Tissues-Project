@@ -1,3 +1,4 @@
+from matplotlib.cbook import delete_masked_points
 from abp import * 
 from analysis import *
 ##TODO find better way of importing to avoid cluttering namespace
@@ -18,6 +19,7 @@ sg = make_search_grid(["epsilon","delta"],[epsilon,delta],True)
 # simulation("pyABP_delta_tests",pyABP_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=["g(r)","anim"])
 pyABP_dict["T"] = 500000
 pyABP_dict["box_width"] = 200
+# sg = [list(l) for l in sg]
 delete_project("pyABP_delta_tests")
 simulation("pyABP_delta_tests",pyABP_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=[])
 

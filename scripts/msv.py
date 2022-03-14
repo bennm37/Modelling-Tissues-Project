@@ -21,25 +21,24 @@ import matplotlib.pyplot as plt
 #             sg[i,j] = dict
 #     return sg
 
-project = "pyABP_k2_tests"
+project = "pyABP_delta_tests"
 sg = pickle.load(open(f"data/{project}/search_grid.p","rb"))
 k2 = [0.4,0.8,1.2,1.6,2]
 epsilon = [0.05,0.1,0.15,0.2,0.25,0.3]
-# sg = make_search_grid2(["k2","ep"],[k2,epsilon],1)
-# sg = pickle.dump(sg,open(f"data/{project}/search_grid.p","wb"))
-# print(sg[0][0])
-# folder_name = get_parameter_suffix(sg[0][0])
-msv_data = np.zeros((5,100))
-ep1 = 0.25
-samples = [[0.4,ep1],[0.8,ep1],[1.2,ep1],[1.6,ep1],[2,ep1]]
+ep1 = 0.1
+samples = [[0.12,ep1],[0.24,ep1],[0.36,ep1]]
+# samples = [[0.12,ep1],[0.24,ep1],[0.36,ep1],[0.48,ep1],[0.6,ep1]]
+msv_data = np.zeros((5,500))
 fig,ax = plt.subplots()
 for i,s in enumerate(samples):
     print(f"i={i},s={s}")
-    k2,ep = s
-    folder_name = f"pyABP_k2_{k2}_ep_{ep}"
-    a = Analysis(f"data/{project}/{folder_name}",pyABP_dict,range(100),"pyABP")
+    delta,ep = s
+    # folder_name = f"pyABP_delta_{delta}_ep_{ep}"
+    folder_name = f"k_1_epsilon_{ep}_delta_{delta}"
+    a = Analysis(f"data/{project}/{folder_name}",pyABP_dict,range(500),"pyABP")
     msv = a.msv()
     msv_data[i,:] = msv
-    ax.plot(msv.T,label=str(s))
+    ax.plot(msv,label=str(s))
+ax.set(xlabel="save no",ylabel="msv",title="MSV of ABP")
 ax.legend()
 plt.show()

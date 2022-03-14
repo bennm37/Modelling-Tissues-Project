@@ -77,16 +77,18 @@ class Analysis(object):
             return None
 
     def load_alphalengths(self,folder_name=None):
-        lengths = [pickle.load(open(f"{folder_name}"))]
         if not folder_name:
             folder_name = f"{self.dn}/alpha_shapes"
         try:
             ##UNPICKLING
+            print(folder_name)
+            # lengths = [pickle.load(open(f"{folder_name}/al_{frame_no}.p","rb")) for frame_no in self.save_range]
             lengths = [pickle.load(open(f"{folder_name}/al_{frame_no}.p","rb")) for frame_no in self.save_range]
             return lengths
         except FileNotFoundError:
             print(f"couldn't find all the lengths for {folder_name} in save range. ")
             return None
+
     ##SUMMARY STATISTICS  
     def analytic_msd(self,num_time_steps):
         tau_r =1 #what is persistence time?
@@ -144,8 +146,15 @@ class Analysis(object):
             df.to_csv(f"{csv}/g(r)_{t}.csv",index=False)
         return drs,normalised_freq
 
-    def generate_g_r_data(self):
-        pass
+    def generate_g_r_data(self,ts,csv=None):
+        for i,t in enumerate(ts):
+            if i==0:
+                drs,f = self.g_r(t)
+            else:
+                drs,fi = self.g_r(t)
+                f += fi
+        f =  f/len(ts)
+        return drs,f
 
     ##COMUTATIONAL GEOMETRY ALGOS
     def pvec(self,t):
@@ -229,20 +238,20 @@ class Analysis(object):
             ax.plot(r,g_r)
             ax.set(title = "Radial Distribution Function")
         except FileNotFoundError:
-            ax.set(title = f"No Data for current selection.")
+            ax.set(title = f"No g(r) data.")
 
     def plot_potential(self,ax,potential,potential_parameters):
         num_samples = 150
         R = np.ones(1)
         data = np.zeros((num_samples))
-        X = np.linspace(0,4,num_samples)
+        X = np.linspace(0,5,num_samples)
         for i,x in enumerate(X):
             pvec = np.array([[[x,0]]])
             ##TODO change potentials to take in one parameters arg not individual
             data[i] = potential(pvec,R,potential_parameters)[0,0]
         if not ax:
             fig,ax = plt.subplots() 
-        ax.set(ylim=(-0.5,1.2))
+        ax.set(ylim=(-1,1.2))
         p = ax.plot(X,data)
         return p,ax
 
@@ -302,13 +311,13 @@ class Analysis(object):
 
     def plot_alpha_length(self,ax):
         lengths = self.load_alphalengths()
-        print(lengths)
-        # length_sum = [sum(l) for l in lengths]
-        # t = 1
-        # ax.plot(t,length_sum)
+        length_sum = [sum(l) for l in lengths]
+        save_unit = 0.1 ##how many time units between saves
+        t = [save_unit*save for save in self.save_range]
+        ax.plot(t,length_sum)
 
     def plot_particles(self,ax,frame_no):
-        asp = [15,15,2,7.5,1]
+        asp = [15,15,10,7.5,1] ##hal,hl,s,hw,ms
         r = self.r_data[frame_no,:,:]
         d = self.d_data[frame_no,:,:]
         v = self.v_data[frame_no,:,:]
