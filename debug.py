@@ -20,8 +20,7 @@ sg = make_search_grid(["epsilon","delta"],[epsilon,delta],True)
 pyABP_dict["T"] = 500000
 pyABP_dict["box_width"] = 200
 # sg = [list(l) for l in sg]
-delete_project("pyABP_delta_tests")
-simulation("pyABP_delta_tests",pyABP_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=[])
+simulation("pyABP_delta_tests",pyABP_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=["g(r)"])
 
 ##TESTING NEW PLOTTING
 # parameters = pyABP_dict

@@ -17,5 +17,5 @@ p1 = np.arange(p1_range[0],p1_range[1]+2*p1_int,p1_int)-p1_int/2
 p2 = np.arange(p2_range[0],p2_range[1]+2*p2_int,p2_int)-p2_int/2
 P1,P2 = np.meshgrid(p1,p2)
 ax.set(xlabel="Delta",ylabel="Epsilon",title="Phase Diagram")
-ax.pcolormesh(P1,P2,phase_diagram,shading="auto",edgecolor="k")
+ax.pcolormesh(P1,P2,phase_diagram,shading="auto",edgecolor="k",cmap="bone")
 plt.show()

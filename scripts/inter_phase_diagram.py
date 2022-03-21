@@ -5,6 +5,7 @@ from parameter_dictionaries import *
 from potentials import *
 from matplotlib.gridspec import GridSpec
 from simulation import get_parameter_suffix,make_param_lists
+from time import sleep
 
 
 data_type = "pyABP"
@@ -48,7 +49,7 @@ phases = np.linspace(0,5,6)
 # df = pd.DataFrame(phase_diagram,columns=cols)
 # df.to_csv("data/phase_diagram.csv",index=False)
 phase_diagram = np.array(pd.read_csv(f"data/{project_name}/phase_diagram.csv"))
-ax0.pcolormesh(P1,EP,phase_diagram,shading="flat",edgecolor="k")
+pc = ax0.pcolormesh(P1,EP,phase_diagram,shading="flat",edgecolor="lightgrey",cmap="bone")
 # ax0.set_xticks(p1)
 # ax0.set_yticks(ep)
 # ax0.grid(which="both")
@@ -65,16 +66,9 @@ a.plot_alphashape(ax=ax2,frame_no=frame_no,single = True)
 a.plot_g_r(ax3,1)
 a.plot_particles(ax4,0)
 def onclick(event):
-    epsilon = event.ydata
-    p1 = event.xdata
-    if p1==None or epsilon ==None :
-        pass
-    elif p1>p1_range[1]+p1_int or p1<p1_range[0]:
-        pass
-    elif epsilon>ep_range[1]+ep_int or epsilon<ep_range[0]:
-        pass
-    ##roudning p1,epsilon to nearest values
-    else:
+    if event.inaxes ==ax0:
+        epsilon = event.ydata
+        p1 = event.xdata
         rounded_p1 = round((p1//p1_int)*p1_int,2)
         rounded_epsilon = round((epsilon//ep_int)*ep_int,2)
         if rounded_p1%1 ==0 :
@@ -103,7 +97,38 @@ def onclick(event):
         a.plot_particles(ax4,0)
         fig.suptitle(f"p1 = {rounded_p1}, Epsilon = {rounded_epsilon}")
         fig.canvas.draw_idle()
+        plt.show()
+
+
+##ANNOTATING ON HOVER 
+annot = ax0.annotate("", xy=(0.1,0.1), xytext=(-90,10),textcoords="offset points",
+                    bbox=dict(boxstyle="round", fc="k"),
+                    arrowprops=dict(arrowstyle="-"))
+annot.set_visible(True)
+def onhover(event):
+    if event.inaxes == ax0:
+        epsilon = event.ydata
+        p1 = event.xdata
+        ind_p1 = p1//p1_int
+        rounded_p1 = round(ind_p1*p1_int,2)
+        ind_ep = epsilon//ep_int
+        rounded_epsilon = round(ind_ep*ep_int,2)
+        annot.xy = rounded_p1,rounded_epsilon
+        # annot.xytext = (-30,10)
+        frac_dim = 1
+        rad_gyr = 1
+        annot.set_text(f"Delta,Epsilon = {rounded_p1,rounded_epsilon} \n\
+Fractal Dimension is {frac_dim}.\n\
+Radius of Gyration is {rad_gyr}.")
+        annot.get_bbox_patch().set_facecolor("grey")
+        annot.get_bbox_patch().set_alpha(0.8)
+        annot.set_visible(True)
+        fig.canvas.draw_idle()
+    else:
+        annot.set_visible(False)
+        fig.canvas.draw_idle()
 
 cid = fig.canvas.mpl_connect('button_press_event', onclick)
+# cid2 = fig.canvas.mpl_connect('motion_notify_event', onhover)
 plt.savefig("./media/test_save.png")
 plt.show()
