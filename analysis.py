@@ -83,7 +83,7 @@ class Analysis(object):
             ##UNPICKLING
             print(folder_name)
             # lengths = [pickle.load(open(f"{folder_name}/al_{frame_no}.p","rb")) for frame_no in self.save_range]
-            lengths = [pickle.load(open(f"{folder_name}/al_{frame_no}.p","rb")) for frame_no in self.save_range]
+            lengths = pickle.load(open(f"{folder_name}/al.p","rb"))
             return lengths
         except FileNotFoundError:
             print(f"couldn't find all the lengths for {folder_name} in save range. ")
@@ -137,8 +137,13 @@ class Analysis(object):
         pdist = pdist[~np.isnan(pdist)].flatten()
         drs = np.arange(0,self.box_width*np.sqrt(2)/2+dr,dr)
         freq = np.histogram(pdist,bins=drs)[0]
-        drs = np.round(drs[1:],2)
-        norm = self.box_width**2/(2*np.pi*drs*dr*self.N**2)
+        drs = drs[1:]
+        # drs = np.round(drs[1:],2)
+        ##we need to normalise by the expected number of particles 
+        ##in each band, rho*volume 
+        rho = self.N**2 /(self.box_width**2)
+        volumes = 2*np.pi*drs*dr 
+        norm = 1/(rho*volumes)
         normalised_freq = freq*norm
         if csv:
             cols = ["r","g(r)"]
@@ -153,7 +158,12 @@ class Analysis(object):
             else:
                 drs,fi = self.g_r(t)
                 f += fi
+    
         f =  f/len(ts)
+        if csv:
+            cols = ["r","g(r)"]
+            df = pd.DataFrame(np.array([drs,f]).T,columns=cols)
+            df.to_csv(f"{csv}/g(r).csv",index=False)
         return drs,f
 
     ##COMUTATIONAL GEOMETRY ALGOS
@@ -185,14 +195,17 @@ class Analysis(object):
         pass
 
     ##PLOTTING
-    def animate_movement_patch(self,sample_rate = 10,patch_type="circle"):
+    def animate_movement_patch(self,sample_rate = 10,patch_type="circle",figax = None):
         """Animates the movement of the active brownian particles using a 
         matplotlib quiver plot"""
         ##TODO sort arrow scaling
         asp = [5,5,None,5,0.00001] ##arrow shape parameters hal,hl,s,hw,ml
         r_data,direction_data,velocity_data = self.r_data,self.d_data,self.v_data
-        fig,ax = plt.subplots()
-        fig.set_size_inches(8,8)
+        if figax:
+            fig,ax = figax
+        else:
+            fig,ax = plt.subplots()
+            fig.set_size_inches(8,8)
         ax.set(xlim=(0,self.box_width),ylim=(0,self.box_width))
         directions = ax.quiver(r_data[0,:,0],r_data[0,:,1],direction_data[0,:,0],direction_data[0,:,1],
             headaxislength=asp[0],headlength=asp[1],scale=asp[2],headwidth=asp[3],minlength=asp[4])
@@ -251,7 +264,7 @@ class Analysis(object):
             data[i] = potential(pvec,R,potential_parameters)[0,0]
         if not ax:
             fig,ax = plt.subplots() 
-        ax.set(ylim=(-1,1.2))
+        ax.set(ylim=(-0.3,1.2))
         p = ax.plot(X,data)
         return p,ax
 
@@ -264,7 +277,8 @@ class Analysis(object):
         # Create the figure and the vf that we will manipulate
 
         parameters = slider_init
-        fig,ax = plt.subplots()
+        fig,axs = plt.subplots(1,2)
+        ax,ax1 = axs
         # ax.set(xlim=(0,4),ylim=(-2,2))
         p,ax = self.plot_potential(ax,potential,parameters)
         # adjust the main plot to make room for the sliders
@@ -303,18 +317,18 @@ class Analysis(object):
         ax.axis("equal")
         ax.set(xlim=(0,self.box_width),ylim=(0,self.box_width))
         if not single:
-            ax.scatter(self.r_data[frame_no,:,0],self.r_data[frame_no,:,1],s=10)
+            ax.scatter(self.r_data[frame_no,:,0],self.r_data[frame_no,:,1],s=2)
         else:
             ax.scatter(self.r_data[0,:,0],self.r_data[0,:,1],s=2)
         for p in ps:
             ax.add_patch(p)
 
-    def plot_alpha_length(self,ax):
+    def plot_alpha_length(self,ax,label="line"):
         lengths = self.load_alphalengths()
         length_sum = [sum(l) for l in lengths]
-        save_unit = 0.1 ##how many time units between saves
+        save_unit = 10 ##how many time units between saves
         t = [save_unit*save for save in self.save_range]
-        ax.plot(t,length_sum)
+        ax.plot(t,length_sum,label=label)
 
     def plot_particles(self,ax,frame_no):
         asp = [15,15,10,7.5,1] ##hal,hl,s,hw,ms
@@ -328,3 +342,4 @@ class Analysis(object):
         for cell in r[:,:]:
             c = Ellipse(cell,2,2,fill=False,color="k")
             p = ax.add_patch(c)
+        

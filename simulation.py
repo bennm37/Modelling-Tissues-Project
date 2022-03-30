@@ -87,8 +87,8 @@ def generate_analyse(potential,parameters,folder_name,data_type,stats=["rvd","g(
         anim.save(f"media/{folder_name}/rvd.mp4")
     if "g(r)" in stats or "all" in stats:
         print("Starting g(r)")
-        for i in range(parameters["T"]//1000):
-            a.g_r(i,csv=f"data/{folder_name}/g(r)")
+        ts = np.arange(100,500,20)
+        a.g_r(ts,csv=f"data/{folder_name}/g(r)")
     if "msd" in stats or "all" in stats:
         print("msd")
         a.generate_msd_data(csv=f"data/{folder_name}/msd")

@@ -4,10 +4,11 @@ from analysis import *
 from parameter_dictionaries import *
 from potentials import *
 from matplotlib.gridspec import GridSpec
-from simulation import get_parameter_suffix,make_param_lists
-from time import sleep
+from simulation import get_parameter_suffix
+from matplotvideo import attach_video_player_to_figure
 
-
+def on_frame(time_stamp):
+    pass
 data_type = "pyABP"
 project_name = "pyABP_delta_tests"
 p_dict = pyABP_delta_dict
@@ -42,7 +43,7 @@ p1 = np.arange(p1_range[0],p1_range[1]+2*p1_int,p1_int)
 ep = np.arange(ep_range[0],ep_range[1]+2*ep_int,ep_int)
 P1,EP = np.meshgrid(p1,ep)
 ax0.set(xlim=(p1_range[0],p1_range[1]+p1_int),ylim=(ep_range[0],ep_range[1]+ep_int))
-phases = np.linspace(0,5,6)
+# phases = np.linspace(0,5,6)
 ##creating and saving random phase diagram
 # phase_diagram = np.random.choice(phases,(n_ep+1,n_p1+1))
 # cols = [f"col{i}" for i in range(n_p1+1)]
@@ -81,6 +82,9 @@ def onclick(event):
         ax3.clear()
         ax4.clear()
         ax1.set(title = "p1 Force")
+        ##COULD ADD IN ANIMATIONS HERE
+        # attach_video_player_to_figure(fig,f"media/Paraview/para_rvd.mp4",on_frame)
+        
         # data_name = f"data/p1_tests/p1_test_k_1_p1_{rounded_p1}_epsilon_{rounded_epsilon}"
         # as_folder_name = f"data/alpha_shapes/p1_tests/p1_{rounded_p1}_ep_{rounded_epsilon}"
         # data_name = f"data/pyABP_p1_tests/pyABP_p1_{rounded_p1}_ep_{rounded_epsilon}"

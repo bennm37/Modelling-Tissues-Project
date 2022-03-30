@@ -3,7 +3,8 @@ from abp import *
 from analysis import *
 from parameter_dictionaries import *
 from potentials import *
-
+import matplotlib.cm as cm
+from matplotlib.ticker import NullLocator
 data_type = "pyABP"
 project_name = "pyABP_delta_tests"
 
@@ -17,5 +18,7 @@ p1 = np.arange(p1_range[0],p1_range[1]+2*p1_int,p1_int)-p1_int/2
 p2 = np.arange(p2_range[0],p2_range[1]+2*p2_int,p2_int)-p2_int/2
 P1,P2 = np.meshgrid(p1,p2)
 ax.set(xlabel="Delta",ylabel="Epsilon",title="Phase Diagram")
-ax.pcolormesh(P1,P2,phase_diagram,shading="auto",edgecolor="k",cmap="bone")
-plt.show()
+cmap = cm.get_cmap("bone",lut=4)
+pc = ax.pcolormesh(P1,P2,phase_diagram,shading="auto",edgecolor="gray",cmap=cmap)
+plt.colorbar(pc,ax=ax,ticks=NullLocator())
+plt.savefig("media/pyABP_delta_tests/summary_plots/phase_diagram.svg")

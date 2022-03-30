@@ -1,3 +1,6 @@
+from imports import *
+from analysis import Analysis
+from parameter_dictionaries import pyABP_delta_dict
 from imports import * 
 import numpy as np 
 from bresenham import bresenham
@@ -5,8 +8,14 @@ from sklearn.linear_model import LinearRegression
 import matplotlib.pyplot as plt
 from matplotlib.patches import Polygon
 
-poly = np.array([[1,1],[5,5],[5,8],[2,7]])
-
+# s = 10
+# poly = poly*s 
+a = Analysis("data/pyABP_delta_tests/k_1_epsilon_0.1_delta_0.36",pyABP_delta_dict,range(0),"pyABP")
+poly = a.load_alphashape(499)[11]
+s=10 
+# print([(i,len(p)) for i,p in enumerate(poly)])
+# poly = np.array([[1,1],[5,5],[5,8],[2,7]])
+# print(poly)
 def boxcount(poly):
     """Uses bresenham algorithms to count the number of squares
     the polygon touches at the given resolution"""
@@ -35,25 +44,30 @@ def boxplot(squares,nx,ny,poly,ax):
     p = Polygon(poly,fill=None,edgecolor="k")
     ax.add_patch(p)
     ax.pcolor(X,Y,C.T,cmap="coolwarm")
-# fig,ax = plt.subplots()
-# squares = boxcount(poly)
-# boxplot(squares,10*s,10*s,ax)
-# plt.show()
 
 
-def fractal_dimension(poly,box_width):
+fig,ax = plt.subplots()
+squares = boxcount(np.round(poly*s,0).astype(int))
+boxplot(squares,200*s,200*s,poly,ax)
+plt.show()
+
+
+def fractal_dimension(multipoly):
     n=20
     s_up = np.arange(4,n+3,1)
     counts = np.zeros(n-1)
     for i,s in enumerate(s_up):
-        squares = boxcount(poly*s)
-        counts[i] = len(squares)
+        for poly in multipoly:
+            test_poly = np.round(poly*s,0).astype(np.int)
+            squares = boxcount(test_poly)
+            counts[i] += len(squares)
     linreg = LinearRegression()
     s_up,counts = s_up.reshape(-1,1),counts.reshape(-1,1)
     linreg.fit(np.log(s_up),np.log(counts))
     m,b = linreg.coef_,linreg.intercept_
     return s_up,counts,m,b
-s_up,counts,m,b = fractal_dimension(poly,20)
+
+s_up,counts,m,b = fractal_dimension([poly])
 
 def log_log_plot(s,counts,m,b):
     fig,ax = plt.subplots()
@@ -63,10 +77,9 @@ def log_log_plot(s,counts,m,b):
     ax.plot(x,y.reshape(30))
     ax.set(xlabel="s",ylabel="square count")
     print(f"Fractal Dimension is {m} over 20 samples.")
-    plt.show()
 
 log_log_plot(s_up,counts,m,b)
-
+plt.show()
 
 
 ##CRAZY NUMPY ARRAY ADDING HACK

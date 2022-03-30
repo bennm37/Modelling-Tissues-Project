@@ -17,10 +17,10 @@ sg = make_search_grid(["epsilon","delta"],[epsilon,delta],True)
 # while not os.listdir("data/pyABP_delta_tests/k_1_epsilon_0.25_delta_0.5/rvd_data"):
 #     pass
 # simulation("pyABP_delta_tests",pyABP_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=["g(r)","anim"])
-pyABP_dict["T"] = 500000
-pyABP_dict["box_width"] = 200
+pyABP_delta_dict["T"] = 500000
+pyABP_delta_dict["box_width"] = 200
 # sg = [list(l) for l in sg]
-simulation("pyABP_delta_tests",pyABP_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=["g(r)"])
+simulation("pyABP_delta_tests",pyABP_delta_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=["g(r)"])
 
 ##TESTING NEW PLOTTING
 # parameters = pyABP_dict
