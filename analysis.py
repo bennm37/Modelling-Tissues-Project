@@ -18,7 +18,7 @@ class Analysis(object):
         ##TODO read in all parameters here?
         self.data_type = data_type
         self.n_saves = len(save_range)
-        self.save_range = save_range
+        self.save_range = np.array(list(save_range))
         self.N = parameters["N"]
         self.T = parameters["T"]
         self.dt = parameters["dt"]
@@ -98,13 +98,13 @@ class Analysis(object):
     def msd(self,m):
         """Calculates the mean squared displacement from the data for
         a given time scale m."""
-        i_sum = np.sum((self.r_data[m:,:]-self.r_data[:self.n_saves-m,:])**2,axis=1)
+        i_sum = np.sum((self.r_data[m:,:]-self.r_data[:self.n_saves-m,:])**2,axis=1)/self.N
         msd = np.sum(i_sum)/(self.n_saves-m)
         return msd
     
     def generate_msd_data(self,csv = None):
         """Calculates the msd for every time scale m."""
-        m_range = np.linspace(0,self.n_saves,self.n_saves,dtype=int)
+        m_range = np.linspace(0,self.n_saves-1,self.n_saves,dtype=int)
         msd_data = np.zeros(m_range.shape)
         for i,m in enumerate(m_range):
             if self.msd(m)==np.nan:
@@ -112,8 +112,8 @@ class Analysis(object):
             msd_data[i] = self.msd(m)
         if csv:
             cols = ["m","msd"]
-            df = pd.DataFrame(np.array([m,msd_data]).T,columns=cols)
-            df.to_csv(f"./data/{csv}",index=False)
+            df = pd.DataFrame(np.array([m_range+self.save_range[0],msd_data]).T,columns=cols)
+            df.to_csv(f"{csv}/msd.csv",index=False)
         return msd_data
 
     def msv(self,csv = None):
@@ -127,6 +127,24 @@ class Analysis(object):
             df = pd.DataFrame(np.array([t,msv_data]).T,columns=cols)
             df.to_csv(f"./data/{csv}",index=False)
         return msv_data
+
+    def areas(self,drs,dr):
+        # print(drs)
+        # return 2*np.pi*drs*dr   
+        s = self.box_width/2
+        areas = np.zeros(drs.shape)
+        for i,r in enumerate(drs):
+            if r<=s:
+                areas[i] = 2*np.pi*r*dr 
+            else:
+                theta = np.arccos(s/r)
+                # outside1 = 2*s*np.sqrt(r**2-s**2)+2*r**2*(2*np.pi-8*theta)
+                # outside2 = 2*s*np.sqrt((r+dr)**2-s**2)+2*(r+dr)**2*(2*np.pi-8*theta)
+                # areas[i] = outside2-outside1
+                areas[i] = r*dr*(2*np.pi-8*theta)
+        return areas
+
+
 
     def g_r(self,t,dr=0.1,csv = None):
         """Calculates the radial distribution function of the data at a
@@ -142,8 +160,8 @@ class Analysis(object):
         ##we need to normalise by the expected number of particles 
         ##in each band, rho*volume 
         rho = self.N**2 /(self.box_width**2)
-        volumes = 2*np.pi*drs*dr 
-        norm = 1/(rho*volumes)
+        areas = self.areas(drs,dr) 
+        norm = 1/(rho*areas)
         normalised_freq = freq*norm
         if csv:
             cols = ["r","g(r)"]
@@ -239,12 +257,13 @@ class Analysis(object):
             self.plot_alpha_shape(ax,folder_name,frame_no)
         anim = animation.FuncAnimation(fig,update,frames =100,interval=30)
 
-    def plot_g_r(self,ax,frame_no,folder_name=None):
+    def plot_g_r(self,ax,folder_name=None):
         if not folder_name:
             folder_name = f"{self.dn}/g(r)"
         try:
             # df = pd.read_csv(f"./data/g_r/N100_k2_centretests/k2_{k2}_epsilon_{epsilon}")
-            df = pd.read_csv(f"{folder_name}/g(r)_{frame_no}.csv")
+            print(f"{folder_name}/g(r).csv")
+            df = pd.read_csv(f"{folder_name}/g(r).csv")
             r = df["r"]
             g_r = df["g(r)"]
             ax.set(xlim=(0,6))

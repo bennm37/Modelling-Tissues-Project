@@ -25,12 +25,12 @@ project = "pyABP_delta_tests"
 sg = pickle.load(open(f"data/{project}/search_grid.p","rb"))
 k2 = [0.4,0.8,1.2,1.6,2]
 # epsilon = [0.05,0.1,0.15,0.2,0.25]
-epsilon = [0.35]
+epsilon = [0.2]
 # ep1 = 0.35
 # samples = [[0.12,ep1],[0.24,ep1],[0.36,ep1]]
 for ep1 in epsilon:
-    # samples = [[0.0,ep1],[0.12,ep1],[0.24,ep1],[0.36,ep1],[0.48,ep1],[0.6,ep1]]
-    samples = [[0.0,ep1],[0.12,ep1],[0.24,ep1],[0.36,ep1]]
+    samples = [[0.0,ep1],[0.12,ep1],[0.24,ep1],[0.36,ep1],[0.48,ep1],[0.6,ep1]]
+    # samples = [[0.0,ep1],[0.12,ep1],[0.24,ep1],[0.36,ep1]]
     msv_data = np.zeros((6,500))
     fig,ax = plt.subplots()
     for i,s in enumerate(samples):
@@ -43,6 +43,7 @@ for ep1 in epsilon:
         msv_data[i,:] = msv
         time = np.linspace(0,5000,500)
         ax.plot(time,msv,label=str(s))
+    ax.set(ylim = (0,0.0015))
     ax.set(xlabel="time units",ylabel="msv",title="MSV of ABP")
     ax.legend()
-    plt.savefig(f"media/pyABP_delta_tests/summary_plots/msv/msv_ep_{ep1}.png")
+    plt.savefig(f"media/pyABP_delta_tests/summary_plots/msv/msv_ep_{ep1}.svg")

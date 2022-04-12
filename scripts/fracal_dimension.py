@@ -10,9 +10,10 @@ from matplotlib.patches import Polygon
 
 # s = 10
 # poly = poly*s 
-a = Analysis("data/pyABP_delta_tests/k_1_epsilon_0.1_delta_0.36",pyABP_delta_dict,range(0),"pyABP")
-poly = a.load_alphashape(499)[11]
-s=10 
+# a = Analysis("data/pyABP_delta_tests/k_1_epsilon_0.1_delta_0.36",pyABP_delta_dict,range(0),"pyABP")
+a = Analysis("data/pyABP_delta_tests/k_1_epsilon_0.3_delta_0.12",pyABP_delta_dict,range(0),"pyABP")
+s=2
+poly = a.load_alphashape(499)[0]
 # print([(i,len(p)) for i,p in enumerate(poly)])
 # poly = np.array([[1,1],[5,5],[5,8],[2,7]])
 # print(poly)
@@ -43,19 +44,20 @@ def boxplot(squares,nx,ny,poly,ax):
         C[int(square[0]),int(square[1])] = 1
     p = Polygon(poly,fill=None,edgecolor="k")
     ax.add_patch(p)
-    ax.pcolor(X,Y,C.T,cmap="coolwarm")
+    ax.pcolor(X,Y,C.T,cmap="jet")
 
 
-fig,ax = plt.subplots()
-squares = boxcount(np.round(poly*s,0).astype(int))
-boxplot(squares,200*s,200*s,poly,ax)
-plt.show()
+# fig,ax = plt.subplots()
+# squares = boxcount(np.round(poly*s,0).astype(int))
+# box_size = np.round(200*s,0).astype(int)
+# boxplot(squares,box_size,box_size,poly*s,ax)
+# plt.show()
 
 
 def fractal_dimension(multipoly):
     n=20
-    s_up = np.arange(4,n+3,1)
-    counts = np.zeros(n-1)
+    s_up = np.exp(np.linspace(-5,-2,n))
+    counts = np.zeros(n)
     for i,s in enumerate(s_up):
         for poly in multipoly:
             test_poly = np.round(poly*s,0).astype(np.int)
@@ -66,19 +68,24 @@ def fractal_dimension(multipoly):
     linreg.fit(np.log(s_up),np.log(counts))
     m,b = linreg.coef_,linreg.intercept_
     return s_up,counts,m,b
-
+# theta = np.linspace(0,2*np.pi,200)
+# poly = 100*np.array([np.cos(theta),np.sin(theta)]).T
 s_up,counts,m,b = fractal_dimension([poly])
 
 def log_log_plot(s,counts,m,b):
     fig,ax = plt.subplots()
     ax.scatter(np.log(s_up),np.log(counts))
-    x = np.linspace(0,np.log(20),30)
+    x = np.linspace(-1,3,30)
     y = m*x+b
+    ax.axis("equal")
     ax.plot(x,y.reshape(30))
     ax.set(xlabel="s",ylabel="square count")
     print(f"Fractal Dimension is {m} over 20 samples.")
 
 log_log_plot(s_up,counts,m,b)
+# fig,ax = plt.subplots()
+# ax.plot(s_up,counts)
+# ax.scatter(s_up,counts)
 plt.show()
 
 
