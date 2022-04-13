@@ -39,11 +39,11 @@ def boxplot(squares,nx,ny,multipoly,ax):
     ax.pcolor(X,Y,C.T,cmap="jet")
 
 def fractal_dimension(multipoly,scales=[1,1.2]):
-    n= 20
+    n= 30
     s_up = np.exp(np.linspace(scales[0],scales[1],n))
     counts = np.zeros(n)
     for i,s in enumerate(s_up):
-        print(f"starting scale {s}")
+        # print(f"starting scale {s}")
         scaled_multipoly = [np.round(p*s).astype(int) for p in multipoly]
         squares = boxcount(scaled_multipoly)
         counts[i] += len(squares)
@@ -65,36 +65,52 @@ def log_log_plot(s,counts,m,b,scales=[1,3]):
 
 # s = 10
 # poly = poly*s 
-a = Analysis("data/pyABP_delta_tests/k_1_epsilon_0.1_delta_0.36",pyABP_delta_dict,range(0),"pyABP")
-# a = Analysis("data/pyABP_delta_tests/k_1_epsilon_0.15_delta_0.24",pyABP_delta_dict,range(0),"pyABP")
-multipoly = a.load_alphashape(499)
-# multipoly = [shape for shape in a.load_alphashape(499)]
+# a = Analysis("data/pyABP_delta_tests/k_1_epsilon_0.1_delta_0.36",pyABP_delta_dict,range(0),"pyABP")
+a = Analysis("data/pyABP_delta_tests/k_1_epsilon_0.3_delta_0.12",pyABP_delta_dict,range(0),"pyABP")
+# multipoly = a.load_alphashape(499)
+multipoly = [shape for shape in a.load_alphashape(499)]
 s = 1
-print([np.round(p*s).astype(int) for p in multipoly])
-print("Rounding successful")
 # poly = a.load_alphashape(499)
 ##GRID TEST
 # x = np.linspace(0,10,100)
 # X,Y = np.meshgrid(x,x)
-# poly = np.moveaxis([X,Y],0,2).reshape(10000,2)
+# multipoly = [np.moveaxis([X,Y],0,2).reshape(10000,2)]
 
 #TESTING BOXCOUNT/BOXPLOT
 # fig,ax = plt.subplots()
-fig,ax = plt.subplots()
-squares = boxcount([np.round(p*s).astype(int) for p in multipoly])
-box_size = np.round(200*s,0).astype(int)
-box_size = np.round(200*s,0).astype(int)
-boxplot(squares,box_size,box_size,multipoly*s,ax)
-plt.show()
+# fig,ax = plt.subplots()
+# squares = boxcount([np.round(p*s).astype(int) for p in multipoly])
+# print(f"Length of squares is {len(squares)}")
+# box_size = np.round(200*s,0).astype(int)
+# box_size = np.round(200*s,0).astype(int)
+# boxplot(squares,box_size,box_size,[p*s for p in multipoly],ax)
+# plt.show()
 
 
 ##TESTING FRACTAL DIMENSION
-scales = [-1,1]
+scales = [-4,-1.5]
 s_up,counts,m,b = fractal_dimension(multipoly,scales=scales)
+plt.style.use("ggplot")
 log_log_plot(s_up,counts,m,b,scales=scales)
 plt.show()
 
-
+##RUNNING FOR SEARCH GRID
+epsilon = [0.05,0.1,0.15,0.2,0.25,0.3,0.35]
+deltas = [0.0,0.12,0.24,0.36,0.48,0.6]
+f_dim_grid = np.zeros((len(epsilon),len(deltas)))
+for i,ep in enumerate(epsilon):
+    for j,delt in enumerate(deltas):
+        print(f"Starting ep = {ep},delt = {delt}")
+        a = Analysis(f"data/pyABP_delta_tests/k_1_epsilon_{ep}_delta_{delt}",pyABP_delta_dict,range(0),"pyABP")
+        try:
+            multipoly = [shape for shape in a.load_alphashape(499)]
+        except TypeError:
+            f_dim_grid
+            continue
+        scales = [-4,-1.5]
+        s_up,counts,m,b = fractal_dimension(multipoly,scales=scales)
+        f_dim_grid[i,j] = m
+print(f_dim_grid)
 ##CRAZY NUMPY ARRAY ADDING HACK
 # points = np.array([[1,2],[2,3]])
 # other_points = np.array([[4,5],[6,7],[8,9]])

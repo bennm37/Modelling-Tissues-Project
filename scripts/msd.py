@@ -19,7 +19,7 @@ for i,ep in enumerate(epsilons):
     num_lines = np.sum(eq_times[i]!=None)
     min = 2*ep
     max = 0.6+2*ep 
-    cmap = cm.get_cmap("summer")
+    cmap = cm.get_cmap("afmhot")
     for j,delta in enumerate(deltas):
         color = cmap(((delta+2*ep)-min)/max)
         eq_time = eq_times[i,j]
@@ -29,12 +29,12 @@ for i,ep in enumerate(epsilons):
             df = pd.read_csv(file_name+"/msd.csv")
             m = df["m"]
             msd = df["msd"]
-            ax.set(xlim=(0,500))
-            ax.plot(m,msd,label = f"[{ep},{delta}]",color=color)
+            # ax.set(xlim=(0,5000))
+            ax.loglog(m*10,msd,label = f"[{ep},{delta}]",color=color)
     ax.set(xlabel="t",ylabel="msd",title=f"MSD for epsilon = {ep}")
     ax.legend()
     plt.show()
-    plt.savefig(f"media/pyABP_delta_tests/summary_plots/msd/msd_ep_{ep}.pdf")
+    # plt.savefig(f"media/pyABP_delta_tests/summary_plots/msd/msd_ep_{ep}.pdf")
 
 ##CREATING DATA
 # eq_times = np.array([[None,None,None,None,None,None],[None,None,None,None,None,300],[None,None,200,100,100,100],[None,None,100,100,100,100],[None,100,100,100,100,100],[100,100,100,100,None,None],[100,100,100,None,None,None]])
@@ -62,7 +62,7 @@ for i,ep in enumerate(epsilons):
 #             file_name = f"data/pyABP_delta_tests/k_1_epsilon_{ep}_delta_{delt}/msd"
 #             print(f"starting ep {ep} delta {delt}, eq_time {eq_time}")
 #             df = pd.read_csv(file_name+"/msd.csv")
-#             df["m"] = np.array(df["m"])+eq_time
+#             df["m"] = np.array(df["m"])-eq_time
 #             if os.path.exists(file_name+"/msd2.csv"):
 #                 print("path exists")
 #                 os.remove(file_name+"/msd.csv")

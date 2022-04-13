@@ -54,6 +54,7 @@ class Analysis(object):
                 self.v_data = np.array(df[["vx","vy"]]).reshape(self.n_saves,self.N,2)
                 self.theta_data = np.array(df["theta"]).reshape(self.n_saves,self.N,1)
                 self.d_data = np.append(np.cos(self.theta_data),np.sin(self.theta_data),axis = 2)
+
         except FileNotFoundError:
             ##TODO what to do here? 
             print(f"Couldn't find {data_name}")
@@ -111,6 +112,28 @@ class Analysis(object):
                 print(m)
             msd_data[i] = self.msd(m)
         if csv:
+            ##TODO CORRECT THIS TO HAVE TIME AS A COLUMN
+            cols = ["m","msd"]
+            df = pd.DataFrame(np.array([m_range+self.save_range[0],msd_data]).T,columns=cols)
+            df.to_csv(f"{csv}/msd.csv",index=False)
+        return msd_data
+
+    def R_g(self,t):
+        r = self.r_data[t,:,:]
+        com = np.mean(r,axis=0)
+        r_com = r-com[np.newaxis,:]
+        return np.sqrt(np.sum(np.mean(r_com**2,axis=0)))
+    
+    def generate_R_g_data(self,csv):
+        """Calculates the radius of gyration for every time scale m."""
+        m_range = np.linspace(0,self.n_saves-1,self.n_saves,dtype=int)
+        msd_data = np.zeros(m_range.shape)
+        for i,m in enumerate(m_range):
+            if self.msd(m)==np.nan:
+                print(m)
+            msd_data[i] = self.msd(m)
+        if csv:
+            ##TODO CORRECT THIS TO HAVE TIME AS A COLUMN
             cols = ["m","msd"]
             df = pd.DataFrame(np.array([m_range+self.save_range[0],msd_data]).T,columns=cols)
             df.to_csv(f"{csv}/msd.csv",index=False)
