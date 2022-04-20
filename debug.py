@@ -8,8 +8,8 @@ import os
 
 # n_delta,n_ep = 6,6
 # delta_range,ep_range  = (0,0.6),(0.05,0.35)
-n_delta,n_ep = 6,7
-delta_range,ep_range  = (0,0.6),(0.05,0.35)
+n_delta,n_ep = 1,1
+delta_range,ep_range  = (0.36,0.36),(0.2,0.2)
 epsilon,delta = make_param_lists(ep_range,delta_range,n_ep,n_delta)
 sg = make_search_grid(["epsilon","delta"],[epsilon,delta],True)
 # simulation("delta_tests",delta_test_dict,repulsion_cohesion_potential2,sg)
@@ -20,7 +20,7 @@ sg = make_search_grid(["epsilon","delta"],[epsilon,delta],True)
 pyABP_delta_dict["T"] = 500000
 pyABP_delta_dict["box_width"] = 200
 # sg = [list(l) for l in sg]
-simulation("pyABP_delta_tests",pyABP_delta_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=["g(r)"])
+simulation("high_poly_test",pyABP_delta_dict,repulsion_cohesion_potential2,sg,"pyABP",stats=[])
 
 ##TESTING NEW PLOTTING
 # parameters = pyABP_dict

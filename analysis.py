@@ -166,9 +166,7 @@ class Analysis(object):
                 # areas[i] = outside2-outside1
                 areas[i] = r*dr*(2*np.pi-8*theta)
         return areas
-
-
-
+    
     def g_r(self,t,dr=0.1,csv = None):
         """Calculates the radial distribution function of the data at a
         given instant of time."""
