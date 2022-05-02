@@ -35,3 +35,28 @@ def bresenham(x0, y0, x1, y1):
             y += 1
             D -= 2*dx
         D += 2*dy
+
+def dda(x0, y0, x1, y1):
+    """Yield integer coordinates on the line from (x0, y0) to (x1, y1).
+
+    Input coordinates should be integers.
+
+    The result will contain both the start and the end point.
+    """
+    dx = x1 - x0
+    dy = y1 - y0
+    if abs(dx)>abs(dy):
+        steps = abs(dx)
+    else:
+        steps = abs(dy)
+
+    x_increment = dx/steps 
+    y_increment = dy/steps 
+    x_coords,y_coords = [],[]
+
+    for i in range(steps):
+        x+= x_increment
+        y+= y_increment
+        x_coords.append(x)
+        y_coords.append(y)
+    return x,y

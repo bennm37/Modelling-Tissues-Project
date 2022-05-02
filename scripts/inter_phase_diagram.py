@@ -1,4 +1,3 @@
-from matplotlib.pyplot import xlabel
 from imports import *
 from abp import *
 from analysis import *

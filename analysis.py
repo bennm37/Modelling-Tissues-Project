@@ -54,6 +54,7 @@ class Analysis(object):
                 self.v_data = np.array(df[["vx","vy"]]).reshape(self.n_saves,self.N,2)
                 self.theta_data = np.array(df["theta"]).reshape(self.n_saves,self.N,1)
                 self.d_data = np.append(np.cos(self.theta_data),np.sin(self.theta_data),axis = 2)
+                self.rad_data = np.array(df["R"]).reshape(self.n_saves,self.N)
 
         except FileNotFoundError:
             ##TODO what to do here? 
@@ -118,6 +119,43 @@ class Analysis(object):
             df.to_csv(f"{csv}/msd.csv",index=False)
         return msd_data
 
+    def msps(self,m,t_p):
+        pvec = self.wrapped_pvec(t_p)
+        pvecm = self.wrapped_pvec(t_p+m)
+        dist = lag.norm(pvec,axis=2)
+        dist = np.where(np.identity(self.N),np.full(dist.shape,np.inf),dist)
+        distm = lag.norm(pvecm,axis=2)
+        distm = np.where(np.identity(self.N),np.full(dist.shape,np.inf),distm)
+        rad = self.rad_data[t_p,:]
+        # rad = np.linspace(0,5,6)
+        b_ij = rad[:,np.newaxis]+np.transpose(rad[:,np.newaxis])
+        # connected_pairs = np.where(np.identity(self.N),np.full(dist.shape,None),connected_pairs)
+        # connected_pairs = np.where(dist<1.1*b_ij,dist,np.full(dist.shape,None))
+        # norm_dist = dist/b_ij
+        # norm_distm = distm/b_ij
+        # print(distm[dist<1.1*b_ij])
+        n_p = np.sum(dist<1.1*b_ij)
+        print(f"Averaging over {n_p} connected particles ")
+        # return np.mean(distm[dist<1.1*b_ij]**2)
+        return distm[dist<1.1*b_ij],np.mean(distm[dist<1.1*b_ij]**2)
+    
+
+    def generate_msps_data(self,t_ps):
+        msps = np.zeros(20)
+        
+        for t_p in t_ps:
+            dists = []
+            ms = np.arange(0,100,5)
+            for i,m in enumerate(ms):
+                print(m,t_p)
+                dist,msps_i = self.msps(m,t_p)
+                dists.append(dist)
+                msps[i] += msps_i
+        msps /= len(t_ps)
+        return dists,msps
+
+
+
     def R_g(self,t):
         r = self.r_data[t,:,:]
         com = np.mean(r,axis=0)
@@ -180,7 +218,7 @@ class Analysis(object):
         # drs = np.round(drs[1:],2)
         ##we need to normalise by the expected number of particles 
         ##in each band, rho*volume 
-        rho = self.N**2 /(self.box_width**2)
+        rho = self.N*(self.N-1) /(self.box_width**2)
         areas = self.areas(drs,dr) 
         norm = 1/(rho*areas)
         normalised_freq = freq*norm
@@ -305,7 +343,7 @@ class Analysis(object):
         if not ax:
             fig,ax = plt.subplots() 
         ax.set(ylim=(-0.3,1.2))
-        p = ax.plot(X,data)
+        p = ax.plot(X/2,data)
         return p,ax
 
     def parameter_potential_plot(self,potential,slider_names,slider_ranges=None,slider_init=None):
@@ -337,9 +375,8 @@ class Analysis(object):
                 valinit = slider_init[i])
 
         def update(val):
-            parameters = [s.val for s in sliders]
-            ax.clear()
-            p,ax1 = self.plot_potential(ax,potential,parameters)
+            v_min,v_max = [s.val for s in sliders]
+            pcolor_plot(a_length_scaled,axs[1],title="Average Alpha Length",v=[0,9],ticks= np.linspace(0,7.5,6),lut=4)
 
         # register the update function with each slider
         for s in sliders:

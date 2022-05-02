@@ -12,29 +12,38 @@ plt.style.use("ggplot")
 project = "pyABP_delta_tests"
 sg = pickle.load(open(f"data/{project}/search_grid.p","rb"))
 eq_times = np.array([[None,None,None,None,None,None],[None,None,None,None,None,300],[None,None,200,100,100,100],[None,None,100,100,100,100],[None,100,100,100,100,None],[100,100,100,100,None,None],[100,100,100,None,None,None]])
+cs = [0,-1,-2.5,-3,-3,-3,-3]
 epsilons = [0.05,0.1,0.15,0.2,0.25,0.3,0.35]
 deltas = [0.0,0.12,0.24,0.36,0.48,0.6]
 for i,ep in enumerate(epsilons):
     fig,ax = plt.subplots()
     num_lines = np.sum(eq_times[i]!=None)
     min = 2*ep
-    max = 0.6+2*ep 
+    max1 = 0.6+2*ep 
     cmap = cm.get_cmap("afmhot")
+    max_eq = 0
+    c = 0 
     for j,delta in enumerate(deltas):
-        color = cmap(((delta+2*ep)-min)/max)
+        color = cmap(((delta+2*ep)-min)/max1)
         eq_time = eq_times[i,j]
         if eq_time:
+            if eq_time >max_eq:
+                max_eq = eq_time
             file_name = f"data/pyABP_delta_tests/k_1_epsilon_{ep}_delta_{delta}/msd"
             print(f"starting ep {ep} delta {delta}, eq_time {eq_time}")
             df = pd.read_csv(file_name+"/msd.csv")
             m = df["m"]
             msd = df["msd"]
+            c = 10**cs[i]
             # ax.set(xlim=(0,5000))
             ax.loglog(m*10,msd,label = f"[{ep},{delta}]",color=color)
-    ax.set(xlabel="t",ylabel="msd",title=f"MSD for epsilon = {ep}")
+    t1 = np.logspace(-10,np.log10(max_eq*10),1000)
+    ax.loglog(t1,c*t1,"k--")
+    ax.loglog(t1,c*(t1)**2,"k--")
+    ax.set(xlabel="t",ylabel="msd",title=f"MSD for epsilon = {ep}",xlim=(10,max_eq*10))
     ax.legend()
     plt.show()
-    # plt.savefig(f"media/pyABP_delta_tests/summary_plots/msd/msd_ep_{ep}.pdf")
+    # plt.savefig(f"media/pyABP_delta_tests/summary_plots/msd/msd_ep_colors_{ep}.pdf")
 
 ##CREATING DATA
 # eq_times = np.array([[None,None,None,None,None,None],[None,None,None,None,None,300],[None,None,200,100,100,100],[None,None,100,100,100,100],[None,100,100,100,100,100],[100,100,100,100,None,None],[100,100,100,None,None,None]])
