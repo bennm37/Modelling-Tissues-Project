@@ -6,7 +6,7 @@ import pickle
 def phase_slider(grid,ax):
     n_sliders = 2
     slider_names = ['vmin','vmax']
-    slider_ranges = [[-5,10],[-5,10]]
+    slider_ranges = [[0,10],[0,10]]
     slider_init = [0,5]
     plt.subplots_adjust(bottom=0.1*n_sliders)
     cb = pcolor_plot(grid,ax,v=slider_init)
@@ -26,7 +26,7 @@ def phase_slider(grid,ax):
         ax.clear()
         # cb.remove()
         v_min,v_max = [s.val for s in sliders]
-        pcolor_plot(grid,ax,v=[v_min,v_max],lut=3)
+        pcolor_plot(grid,ax,v=[v_min,v_max])
 
     # register the update function with each slider
     for s in sliders:
@@ -36,8 +36,9 @@ def phase_slider(grid,ax):
 a_length = pickle.load(open("media/pyABP_delta_tests/summary_plots/alpha_lengths/average_lenths.p",'rb'))
 a_num = pickle.load(open("media/pyABP_delta_tests/summary_plots/alpha_lengths/num_shapes.p",'rb'))
 a_num_log = np.log(a_num)
+msps = pickle.load(open(f"media/pyABP_delta_tests/summary_plots/msps/msps_grid.p","rb"))
 a_length_scaled = a_length/(2*np.sqrt(2000)*np.pi)
 fig,ax = plt.subplots()
-sliders = phase_slider(a_num_log,ax)
-print(a_num_log)
+sliders = phase_slider(np.log(msps),ax)
+print(np.log(msps))
 plt.show()

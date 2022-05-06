@@ -100,23 +100,33 @@ class Analysis(object):
     def msd(self,m):
         """Calculates the mean squared displacement from the data for
         a given time scale m."""
-        i_sum = np.sum((self.r_data[m:,:]-self.r_data[:self.n_saves-m,:])**2,axis=1)/self.N
+        ##SUBTRACTING COM
+        L= self.box_width
+        disps = self.r_com[m:,:,:]-self.r_com[:self.n_saves-m,:,:]
+        wrapped_disps= disps - np.where(np.abs(disps)>L/2,np.sign(disps)*L,np.zeros(disps.shape))
+        i_sum = np.sum(lag.norm(wrapped_disps,axis=2)**2,axis=1)/self.N
         msd = np.sum(i_sum)/(self.n_saves-m)
         return msd
+        # i_sum = np.sum((self.r_data[m:,:]-self.r_data[:self.n_saves-m,:])**2,axis=1)/self.N
+        # msd = np.sum(i_sum)/(self.n_saves-m)
+        # return msd
     
     def generate_msd_data(self,csv = None):
         """Calculates the msd for every time scale m."""
         m_range = np.linspace(0,self.n_saves-1,self.n_saves,dtype=int)
         msd_data = np.zeros(m_range.shape)
+        self.r_com = self.r_data-np.mean(self.r_data,axis=1)[:,np.newaxis,:]
         for i,m in enumerate(m_range):
-            if self.msd(m)==np.nan:
+            if i%50 == 0:
+                print(f"Completed up to m = {m}")
+            msd_m = self.msd(m)
+            if msd_m==np.nan:
                 print(m)
-            msd_data[i] = self.msd(m)
+            msd_data[i] = msd_m
         if csv:
-            ##TODO CORRECT THIS TO HAVE TIME AS A COLUMN
             cols = ["m","msd"]
             df = pd.DataFrame(np.array([m_range+self.save_range[0],msd_data]).T,columns=cols)
-            df.to_csv(f"{csv}/msd.csv",index=False)
+            df.to_csv(f"{csv}/msd_com.csv",index=False)
         return msd_data
 
     def msps(self,m,t_p):
@@ -141,11 +151,11 @@ class Analysis(object):
     
 
     def generate_msps_data(self,t_ps):
-        msps = np.zeros(20)
+        msps = np.zeros(59)
         
         for t_p in t_ps:
             dists = []
-            ms = np.arange(0,100,5)
+            ms = np.arange(0,295,5)
             for i,m in enumerate(ms):
                 print(m,t_p)
                 dist,msps_i = self.msps(m,t_p)
