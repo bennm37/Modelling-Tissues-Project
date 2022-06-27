@@ -30,7 +30,7 @@ pyABP_dict = {
 toy_dict = {
     "R":np.ones(N),
     "N":10,
-    "v_0":0.1,
+    "v_0":0,
     "D":0.1,
     "k":1,
     "box_width":10,

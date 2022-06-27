@@ -8,11 +8,9 @@ from abp import *
 
 
 # data = "../data/learning_potentials/k_1_epsilon_0.15_delta_0.6/"
-data = "/Users/benn-m/Documents/Epithelial ABP/data/learning_potentials/k_1_epsilon_0.15_delta_0.6_many_short"
-a = Analysis(data,toy_dict,range(2000),"pyABP")
 
 ##CHECK ALL FOR LOOPS AND RESHAPES ARE CORRECT
-
+np.seterr(invalid='ignore')
 def normalise_3darr(arr):
     # normalised_arr = arr/np.moveaxis(np.tile(lag.norm(arr,axis=2),(2,1,1)),0,2)
     normalised_arr = np.nan_to_num(arr/lag.norm(arr,axis=2)[:,:,np.newaxis])
@@ -65,26 +63,22 @@ def construct_phi(r,centers,width):
     for traj in r:
         ##KEY benifit of this process is can parallelise here instead
         ## of for loop 
-        pvec_calc = Analysis(data,toy_dict,range(500),"pyABP")
+        pvec_calc = Analysis(data,toy_dict,range(20),"pyABP")
+        # print(f'traj shape is {traj.shape}')
+        pvec_calc.r_data = traj
         phi_m = np.zeros((n,L,N,d))
         for l,t in enumerate(traj):
-            pvec = pvec_calc.pvec(l)
+            pvec = pvec_calc.wrapped_pvec(l)
             phi_ml = phi_mt(pvec,centers,width)
             phi_m[:,l,:,:] = phi_ml
         phi += phi_m
-    return phi/(L*N)
+    return phi
 
 def construct_d(v):
-    n,L,N,d = v.shape
-    return np.sum(v.reshape(n,L*N*d),axis=0)
-
-
-def solve():
-    phi = construct_phi(traj_data,centers,width)
-    print(phi)
-    n,L,N,d = phi.shape
-    shaped_phi = phi.reshape(n,N*L*d)
-    pass
+    M,L,N,d = v.shape
+    move = np.moveaxis(v,[0,1,2,3],[3,0,1,2])
+    print(f'vshape is {v.shape}')
+    return np.sum(move.reshape(L*N*d,M,order="F"),axis=1)
 
 def plot_PL_potential(weights,centers,width):
     w = width 
@@ -112,54 +106,52 @@ def dividing_trajectories(r_data,v_data,L,start_times):
     return traj,v_traj
 
 def get_histograms(centers):
-    dist = lag.norm(a.pvec(1),axis=2).flatten()
+    dist = lag.norm(a.wrapped_pvec(1),axis=2).flatten()
     hist = np.histogram(dist,centers)[0]
     T = a.n_saves
     for t in range(1,T):
-        dist = lag.norm(a.pvec(t),axis=2).flatten()
+        dist = lag.norm(a.wrapped_pvec(t),axis=2).flatten()
         hist += np.histogram(dist,centers)[0]
     return hist
 
+def solve(a,centers):
+    r_data = a.r_data
+    v_data = a.v_data
+    start_times = np.arange(0,2000,20)
+    traj_data,v_traj_data = dividing_trajectories(r_data,v_data,20,start_times)
+    phi = construct_phi(traj_data,centers,width)
+    n,L,N,d = phi.shape
+    move = np.moveaxis(phi,[0,1,2,3],[3,0,1,2])
+    # print(f"phi shape is {phi.shape}")
+    # print(f"move shape is {move.shape}")
+    A = move.reshape(N*L*d,n,order='F')
+    D = construct_d(v_traj_data)
+    LHS = A.T @ A
+    RHS = A.T @ D
+    solution = lag.solve(LHS,RHS)
+    return solution
 
-# ts = np.linspace(0,100,1,dtype=int)
-r_data = a.r_data
-v_data = a.v_data
-start_times = np.arange(0,2000,20)
-dist = lag.norm(a.pvec(0),axis=2)
-# print(f'dist is {dist}')
-traj_data,v_traj_data = dividing_trajectories(r_data,v_data,20,start_times)
-print(traj_data[99])
 width = 0.2
-centers = np.arange(0.6,6,width)
-hist = get_histograms(centers)
-fig,ax1 = plt.subplots()
-# print(f'hist is {hist}')
-ax1.bar(centers[:-1],hist,width = width)
-plt.show()
-phi = construct_phi(traj_data,centers,width)
-n,L,N,d = phi.shape
-move = np.moveaxis(phi,[0,1,2,3],[3,0,1,2])
-# print(f"phi shape is {phi.shape}")
-# print(f"move shape is {move.shape}")
-A = move.reshape(N*L*d,n)
-D = construct_d(v_traj_data)
-# print(A)
-LHS = A.T @ A
-RHS = A.T @ D
-print(f':LHS shape is {LHS.shape}')
-print(f':RHS shape is {RHS.shape}')
-print(LHS[np.nonzero(LHS)].shape)
-print(LHS)
-
-solution = lag.solve(LHS,RHS)
-# print(solution)
+start,end = 0.2,5
+centers = np.arange(start,end,width)
+data = "/Users/benn-m/Documents/Epithelial ABP/data/learning_potentials/k_1_epsilon_0.5_delta_1.0_many_short"
+# data = "/Users/benn-m/Documents/Epithelial ABP/data/learning_potentials/k_1_epsilon_0.15_delta_0.6_many_short"
+a = Analysis(data,toy_dict,range(2000),"pyABP")
+solution = solve(a,centers)
 fig,ax = plt.subplots()
-a.plot_potential(ax,repulsion_cohesion_potential2,[1,0.15,0.6])
-ax.set(ylim=(-3,3))
-ax.plot(centers,solution)
+a.plot_potential(ax,repulsion_cohesion_potential2,[1.0,0.5,1])
+# ax.plot((centers-start)/2+start,-solution1)
+ax.set(ylim=(-3,1))
+ax.plot(centers[2:]-1,-solution[2:])
 plt.show()
 
-# print(shaped_phi.T.shape)
+
+# ##SHOWING HIST
+# # hist = get_histograms(centers)
+# # fig,ax1 = plt.subplots()
+# # # print(f'hist is {hist}')
+# # ax1.bar(centers[:-1],hist,width = width)
+# # plt.show()
 
 ## TESTING POTENTIAL PLOTTING
 # plot_PL_potential(np.ones(10),[0,10],width=width)
