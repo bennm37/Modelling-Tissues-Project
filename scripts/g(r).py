@@ -1,5 +1,5 @@
-from imports import *
-from analysis import *
+# from imports import *
+from ..Modelling_Tissues_Project import analysis
 from parameter_dictionaries import pyABP_delta_dict
 
 

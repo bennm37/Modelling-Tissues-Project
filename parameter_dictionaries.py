@@ -27,6 +27,17 @@ pyABP_dict = {
     "dt": 0.01,
     } 
 
+toy_dict = {
+    "R":np.ones(N),
+    "N":10,
+    "v_0":0.1,
+    "D":0.1,
+    "k":1,
+    "box_width":10,
+    "T":500000,
+    "dt": 0.01,
+    } 
+
 k2_test_dict = {
     "R":np.ones(N),
     "N":N,

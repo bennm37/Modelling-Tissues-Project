@@ -345,7 +345,7 @@ class Analysis(object):
         num_samples = 150
         R = np.ones(1)
         data = np.zeros((num_samples))
-        X = np.linspace(0,5,num_samples)
+        X = np.linspace(0,20,num_samples)
         for i,x in enumerate(X):
             pvec = np.array([[[x,0]]])
             ##TODO change potentials to take in one parameters arg not individual
